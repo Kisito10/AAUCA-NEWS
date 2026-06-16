@@ -1,0 +1,282 @@
+/* ═══════════════════════════════════════════════════════
+   login.component.css  —  Split Card · Blue Theme
+═══════════════════════════════════════════════════════ */
+
+:host {
+  --blue:      #3B53F0;
+  --blue-lt:   #4D63F5;
+  --blue-dk:   #2E42C9;
+  --side:      #4B3DEB;
+  --page:      #9DA8F5;
+  --ink:       #1B1B29;
+  --muted:     #8E8EA3;
+  --line:      #E3E5F0;
+  --danger:    #E05555;
+}
+
+.lc-root {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--page);
+  padding: 107px 24px 40px;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  color: var(--ink);
+}
+
+/* ── Navbar ── */
+.lc-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 32px;
+  background: #F5C518;
+  box-shadow: 0 10px 36px rgba(0,0,0,.25);
+  border-bottom: 1px solid rgba(23,18,4,.35);
+}
+.lc-nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.lc-nav__logo {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: 2px solid #171204;
+  object-fit: contain;
+  padding: 2px;
+  background: rgba(23,18,4,.08);
+}
+.lc-nav__name       { font-family: 'Fraunces', Georgia, serif; font-size: 18px; font-weight: 700; letter-spacing: .5px; }
+.lc-nav__name-gold  { color: #171204; }
+.lc-nav__name-white { color: rgba(23,18,4,.62); }
+.lc-nav__back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: rgba(23,18,4,.68);
+  text-decoration: none;
+  transition: color .2s;
+}
+.lc-nav__back:hover { color: #171204; }
+
+/* ── Card ── */
+.lc-card {
+  display: flex;
+  width: 100%;
+  max-width: 1000px;
+  min-height: 560px;
+  background: #FFFFFF;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(27,27,60,.28);
+  animation: cardIn .5s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes cardIn {
+  from { opacity:0; transform:translateY(24px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── Panel izquierdo ── */
+.lc-side {
+  position: relative;
+  flex: 0 0 46%;
+  overflow: hidden;
+}
+
+.lc-side__photo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+/* ── Panel derecho ── */
+.lc-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 56px 64px;
+}
+
+.lc-title {
+  font-size: 30px;
+  font-weight: 800;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.lc-subtitle {
+  font-size: 13.5px;
+  color: var(--muted);
+  margin: 0 0 32px;
+}
+
+/* ── Error ── */
+.lc-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  margin-bottom: 20px;
+  background: rgba(224,85,85,.08);
+  border: 1px solid rgba(224,85,85,.3);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--danger);
+  animation: slideDown .3s ease;
+}
+@keyframes slideDown {
+  from { opacity:0; transform:translateY(-8px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── Form ── */
+.lc-form { display: flex; flex-direction: column; }
+.lc-field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+.lc-field__label { font-size: 12.5px; font-weight: 600; color: var(--ink); }
+.lc-field__wrap { position: relative; display: flex; align-items: center; }
+
+.lc-field__input {
+  width: 100%;
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 13px 16px;
+  color: var(--ink);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.lc-field__input::placeholder { color: #B9BBCC; }
+.lc-field__input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(59,83,240,.12);
+}
+.lc-field__input:disabled { opacity: .5; cursor: not-allowed; }
+.lc-field__input--pw { padding-right: 46px; }
+
+.lc-field__eye {
+  position: absolute;
+  right: 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #B9BBCC;
+  display: flex;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color .2s;
+}
+.lc-field__eye:hover { color: var(--blue); }
+
+/* ── Forgot ── */
+.lc-forgot {
+  display: flex;
+  justify-content: flex-end;
+  margin: -6px 0 26px;
+}
+.lc-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blue);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  transition: color .2s;
+}
+.lc-link:hover { color: var(--blue-dk); text-decoration: underline; }
+
+/* ── Register ── */
+.lc-register {
+  margin: 22px 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+.lc-register__link {
+  color: var(--blue);
+  font-weight: 700;
+  text-decoration: none;
+  margin-left: 4px;
+  transition: color .2s;
+}
+.lc-register__link:hover { color: var(--blue-dk); text-decoration: underline; }
+
+/* ── Botón ── */
+.lc-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  padding: 14px;
+  background: var(--blue);
+  border: none;
+  border-radius: 8px;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .2s, transform .15s, box-shadow .25s;
+  box-shadow: 0 8px 22px rgba(59,83,240,.3);
+}
+.lc-btn:hover:not(:disabled) {
+  background: var(--blue-lt);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(59,83,240,.4);
+}
+.lc-btn:active:not(:disabled) { transform: translateY(0); }
+.lc-btn:disabled { opacity: .55; cursor: not-allowed; }
+
+/* ── Spinner ── */
+.lc-spinner {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,.35);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .lc-side  { display: none; }
+  .lc-panel { padding: 48px 36px; }
+  .lc-card  { min-height: auto; max-width: 480px; }
+  .lc-nav   { padding: 14px 20px; }
+}
+/* Panel izquierdo — más ancho */
+.lc-side {
+  position: relative;
+  flex: 0 0 52%;   /* ← antes 46% */
+  overflow: hidden;
+}
+
+/* Panel derecho — menos padding */
+.lc-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px 36px;  /* ← antes 56px 64px */
+}

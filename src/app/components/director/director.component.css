@@ -1,0 +1,374 @@
+/* ═══════════════════════════════════════════════════════════════════
+   director.component.css — AAUCA NEWS · Panel Admin
+   Dashboard azul Bootstrap + NAVBAR AMARILLO AAUCA + tabla con imagen/filtros
+═══════════════════════════════════════════════════════════════════ */
+
+:host {
+  --primary: #0d6efd;
+  --gold:    #f5c518;
+  --gold-lt: #ffd95c;
+  --ink:     #171204;
+  --bg:      #f8f9fa;
+  --line:    #e9ecef;
+  --muted:   #6c757d;
+  --text:    #212529;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   NAVBAR AMARILLO AAUCA
+═══════════════════════════════════════════════════════════════════ */
+.adm-navbar {
+  background-color: var(--gold) !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .22);
+  border-bottom: 1px solid rgba(23, 18, 4, .25);
+  z-index: 1040;
+}
+
+.adm-navbar .navbar-brand,
+.adm-navbar .nav-link,
+.adm-navbar span,
+.adm-navbar .btn-link {
+  color: var(--ink) !important;
+}
+.adm-navbar .navbar-brand:hover,
+.adm-navbar .btn-link:hover {
+  color: #000 !important;
+}
+
+.adm-navbar .btn-outline-dark {
+  color: var(--ink) !important;
+  border-color: rgba(23, 18, 4, .5) !important;
+  background: transparent !important;
+  font-weight: 700;
+}
+.adm-navbar .btn-outline-dark:hover {
+  background: var(--ink) !important;
+  color: var(--gold) !important;
+  border-color: var(--ink) !important;
+}
+
+.adm-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--ink);
+}
+.adm-avatar-ini {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink);
+  color: var(--gold);
+  font-weight: 800;
+  font-size: 13px;
+}
+
+/* ═══ SIDEBAR ═══ */
+.sidebar {
+  min-height: calc(100vh - 56px);
+  border-right: 1px solid var(--line);
+}
+
+.sidebar-heading {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sidebar .nav-link {
+  color: #333;
+  border-radius: 6px;
+  margin: 1px 8px;
+  padding: 8px 12px;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  transition: background .15s, color .15s;
+}
+.sidebar .nav-link:hover {
+  background: rgba(13, 110, 253, .08);
+  color: var(--primary);
+}
+.sidebar .nav-link.active {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+.sidebar .nav-link.active .badge {
+  background: #fff !important;
+  color: var(--primary) !important;
+}
+.sidebar .nav-link .badge {
+  margin-left: auto;
+}
+
+/* ═══ CONTENIDO ═══ */
+main {
+  background: var(--bg);
+  min-height: calc(100vh - 56px);
+}
+
+main h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ═══ TARJETAS ESTADÍSTICAS ═══ */
+.card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .07);
+}
+.card.bg-primary, .card.bg-success, .card.bg-warning, .card.bg-info {
+  transition: transform .18s, box-shadow .2s;
+}
+.card.bg-primary:hover, .card.bg-success:hover,
+.card.bg-warning:hover, .card.bg-info:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .15);
+}
+
+/* ═══ TARJETAS DE NOTICIA (pendientes) ═══ */
+.news-card {
+  transition: transform .2s, box-shadow .2s;
+}
+.news-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .12);
+}
+
+.noticia-card-img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #e9ecef;
+}
+.noticia-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: transform .35s ease;
+}
+.news-card:hover .noticia-card-img img {
+  transform: scale(1.05);
+}
+.news-card .card-title { color: var(--text); }
+.news-card .card-text  { color: #495057 !important; }
+
+.dx-excerpt {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.55;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MINIATURA EN TABLA DE NOTICIAS
+═══════════════════════════════════════════════════════════════════ */
+.noticia-thumb {
+  width: 56px;
+  height: 42px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: #e9ecef;
+  flex-shrink: 0;
+}
+.noticia-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+.noticia-thumb-placeholder {
+  width: 56px;
+  height: 42px;
+  border-radius: 6px;
+  background: #f1f3f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  border: 1px solid var(--line);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BADGES DE SECCIÓN COLOREADOS (como en la imagen)
+═══════════════════════════════════════════════════════════════════ */
+.seccion-badge {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  background-color: #198754;
+  color: #fff;
+}
+
+/* Colores por sección — se pueden ampliar según las secciones reales */
+.seccion-badge[data-seccion="Actividades"],
+.seccion-badge.actividades  { background-color: #198754 !important; }
+.seccion-badge[data-seccion="Cultura"],
+.seccion-badge.cultura      { background-color: #8b5cf6 !important; }
+.seccion-badge[data-seccion="Deportes"],
+.seccion-badge.deportes     { background-color: #f97316 !important; }
+.seccion-badge[data-seccion="Información"],
+.seccion-badge.informacion  { background-color: #0ea5e9 !important; }
+.seccion-badge[data-seccion="Avisos"],
+.seccion-badge.avisos       { background-color: #eab308 !important; color: #1a1a00 !important; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   BOTONES ICONO (sin borde, sólo icono coloreado)
+═══════════════════════════════════════════════════════════════════ */
+.btn-icon {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 8px;
+  line-height: 1;
+  transition: background .15s, border-color .15s;
+}
+.btn-icon:hover {
+  background: #f1f3f5;
+  border-color: #ced4da;
+}
+.btn-icon i {
+  font-size: 15px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TARJETA DE FILTROS
+═══════════════════════════════════════════════════════════════════ */
+.card.p-3 {
+  background: #fff;
+  border: 1px solid var(--line) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TABLAS — texto SIEMPRE negro oscuro
+═══════════════════════════════════════════════════════════════════ */
+.table thead th,
+.card .table thead th {
+  background: #f1f3f5 !important;
+  color: var(--text) !important;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  border-bottom: 2px solid #dee2e6 !important;
+  white-space: nowrap;
+  padding: 12px 14px;
+}
+
+.table tbody td,
+.card .table tbody td {
+  color: var(--text) !important;
+  background: #fff !important;
+  font-size: 14px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+
+.table tbody td span:not(.badge):not(.spinner-border),
+.table tbody td small,
+.table tbody td div,
+.table tbody td p {
+  color: var(--text) !important;
+}
+
+.table tbody td a {
+  color: var(--primary) !important;
+  font-weight: 600;
+}
+.table tbody td a:hover { text-decoration: underline !important; }
+
+.table tbody td .text-muted { color: var(--muted) !important; }
+
+.table tbody tr:hover td { background: #f5f8fc !important; }
+.table tbody tr:last-child td { border-bottom: none; }
+
+/* ═══ MODALES ═══ */
+.modal.d-block {
+  background: transparent;
+  z-index: 1055;
+}
+.modal-backdrop.show {
+  z-index: 1050;
+}
+.modal-content {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .25);
+}
+.modal-header.bg-primary .modal-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+.modal-body {
+  color: var(--text);
+}
+.modal-body .form-label { color: var(--text); }
+
+.noticia-modal-preview {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #f1f5f9;
+}
+.noticia-modal-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.modal-body label[style*="cursor:pointer"] {
+  border: 2px dashed var(--primary);
+  background: rgba(13, 110, 253, .04);
+  color: var(--primary);
+  padding: 14px;
+  transition: background .15s;
+}
+.modal-body label[style*="cursor:pointer"]:hover {
+  background: rgba(13, 110, 253, .1);
+}
+
+/* ═══ BADGE URGENTE CON PULSO ═══ */
+.urgent-badge {
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: .5; }
+}
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 767.98px) {
+  .sidebar {
+    min-height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+  .sidebar .nav {
+    flex-direction: row !important;
+    flex-wrap: wrap;
+  }
+  .sidebar .nav-link {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+  main h1 {
+    font-size: 1.5rem;
+  }
+  .noticia-thumb,
+  .noticia-thumb-placeholder {
+    width: 44px;
+    height: 34px;
+  }
+}

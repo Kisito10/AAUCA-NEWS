@@ -1,0 +1,158 @@
+<div class="modal fade show d-block" style="background:rgba(0,0,0,.6);"
+     (click)="cerrar.emit()">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
+       (click)="$event.stopPropagation()">
+    <div class="modal-content rounded-3 shadow-lg">
+
+      <div class="modal-header bg-dark text-white border-0 rounded-top-3">
+        <h5 class="modal-title fw-semibold">👤 Mi Perfil</h5>
+        <button class="btn-close btn-close-white" (click)="cerrar.emit()"></button>
+      </div>
+
+      <div class="modal-body p-4">
+
+        <div class="alert alert-success d-flex align-items-center gap-2" *ngIf="success">
+          {{ success }}
+        </div>
+        <div class="alert alert-danger d-flex align-items-center gap-2" *ngIf="error">
+          {{ error }}
+          <button class="btn-close ms-auto" (click)="error=''"></button>
+        </div>
+
+        <!-- Foto + info -->
+        <div class="d-flex align-items-center gap-4 mb-4 p-3 rounded-3"
+             style="background:#f8f9fa;">
+
+          <div class="position-relative" style="flex-shrink:0;">
+            <div class="rounded-circle overflow-hidden shadow"
+                 style="width:110px;height:110px;border:3px solid #ffc107;">
+
+              <!-- Preview de nueva foto -->
+              <img *ngIf="fotoPreview"
+                   [src]="fotoPreview"
+                   alt="Nueva foto"
+                   style="width:100%;height:100%;object-fit:cover;">
+
+              <!-- Foto actual del servidor -->
+              <img *ngIf="!fotoPreview && fotoActual"
+                   [src]="fotoActual"
+                   alt="Foto de perfil"
+                   style="width:100%;height:100%;object-fit:cover;"
+                   (error)="fotoActual = null">
+
+              <!-- Inicial si no hay foto -->
+              <div *ngIf="!fotoPreview && !fotoActual"
+                   class="w-100 h-100 d-flex align-items-center justify-content-center bg-warning"
+                   style="font-size:2.5rem;font-weight:bold;color:#1a1a2e;">
+                {{ inicialNombre }}
+              </div>
+
+            </div>
+
+            <label class="position-absolute bottom-0 end-0 btn btn-warning btn-sm
+                          rounded-circle p-0 d-flex align-items-center justify-content-center shadow"
+                   style="width:32px;height:32px;cursor:pointer;"
+                   title="Cambiar foto de perfil">
+              📷
+              <input type="file" accept="image/jpeg,image/png,image/webp,image/gif"
+                     class="d-none" (change)="onFotoSelected($event)">
+            </label>
+          </div>
+
+          <div class="flex-grow-1">
+            <h5 class="fw-bold mb-1">{{ user?.nombre }} {{ user?.apellidos }}</h5>
+            <span class="badge bg-warning text-dark mb-1">{{ user?.rol }}</span>
+            <p class="text-muted small mb-1">✉️ {{ user?.email }}</p>
+            <p class="text-muted small mb-0" *ngIf="user?.habitacion">
+              🚪 Habitación {{ user?.habitacion?.numero }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Preview nueva foto seleccionada -->
+        <div *ngIf="fotoPreview" class="mb-3 p-2 border rounded-3 d-flex align-items-center gap-3"
+             style="background:#fff3cd;">
+          <img [src]="fotoPreview" class="rounded-circle shadow-sm"
+               style="width:50px;height:50px;object-fit:cover;border:2px solid #ffc107;">
+          <div class="flex-grow-1">
+            <p class="mb-0 small fw-semibold text-warning-emphasis">Nueva foto seleccionada</p>
+            <p class="mb-0 small text-muted">{{ fotoFile?.name }}</p>
+          </div>
+          <button class="btn btn-sm btn-outline-danger" (click)="quitarFoto()">✕</button>
+        </div>
+
+        <hr class="my-3">
+
+        <h6 class="fw-semibold text-muted mb-3">Información personal</h6>
+        <div class="row g-3">
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Nombre *</label>
+            <input class="form-control" [(ngModel)]="form.nombre" placeholder="Tu nombre">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Apellidos</label>
+            <input class="form-control" [(ngModel)]="form.apellidos" placeholder="Tus apellidos">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Género</label>
+            <select class="form-select" [(ngModel)]="form.genero">
+              <option value="">— Sin especificar —</option>
+              <option value="M">Masculino</option>
+              <option value="F">Femenino</option>
+              <option value="NB">No binario</option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Facultad</label>
+            <input class="form-control" [(ngModel)]="form.facultad"
+                   placeholder="Ej: Ingeniería, Medicina...">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Selección deportiva</label>
+            <input class="form-control" [(ngModel)]="form.seleccion"
+                   placeholder="Ej: Fútbol, Baloncesto...">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">
+              Nueva contraseña
+              <small class="text-muted fw-normal">(dejar vacío para no cambiar)</small>
+            </label>
+            <div class="input-group">
+              <input [type]="showPw ? 'text' : 'password'"
+                     class="form-control" [(ngModel)]="form.password"
+                     placeholder="••••••••">
+              <button class="btn btn-outline-secondary" type="button"
+                      (click)="showPw = !showPw">
+                {{ showPw ? '🙈' : '👁️' }}
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="alert alert-info small mt-3 mb-0">
+          ℹ️ El email y el rol solo pueden ser cambiados por el Director.
+        </div>
+
+      </div>
+
+      <div class="modal-footer bg-light border-0 rounded-bottom-3">
+        <button class="btn btn-secondary" (click)="cerrar.emit()" [disabled]="guardando">
+          Cancelar
+        </button>
+        <button class="btn btn-warning text-dark fw-semibold"
+                (click)="guardar()" [disabled]="guardando">
+          <span *ngIf="guardando" class="spinner-border spinner-border-sm me-2"></span>
+          {{ guardando ? 'Guardando...' : '💾 Guardar cambios' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

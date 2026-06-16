@@ -1,0 +1,1213 @@
+<!-- ════════════════════════════════════════════════════════════════
+     PANEL DIRECTOR — AAUCA NEWS (estilo dashboard azul / Bootstrap)
+════════════════════════════════════════════════════════════════ -->
+
+<!-- ═══ NAVBAR SUPERIOR AMARILLO AAUCA ═══ -->
+<nav class="navbar navbar-expand-lg sticky-top adm-navbar">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand fw-bold" href="javascript:void(0)">
+      <i class="bi bi-newspaper me-2"></i>AAUCA News
+    </a>
+    <div class="d-flex align-items-center ms-auto gap-3">
+      <span class="d-none d-md-inline">
+        <i class="bi bi-speedometer2 me-1"></i>Panel
+      </span>
+      <button class="btn btn-link text-decoration-none d-flex align-items-center gap-2 p-0"
+              (click)="mostrarPerfil = true" title="Mi perfil">
+        <img *ngIf="currentUser?.foto" [src]="fotoNavbar" class="adm-avatar" alt="Perfil">
+        <span *ngIf="!currentUser?.foto" class="adm-avatar adm-avatar-ini">
+          {{ (currentUser?.nombre || 'D').charAt(0) | uppercase }}
+        </span>
+        <span class="d-none d-sm-inline">{{ currentUser?.email }}</span>
+      </button>
+      <button class="btn btn-outline-dark btn-sm" (click)="logout()" title="Cerrar sesión">
+        <i class="bi bi-box-arrow-right"></i>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid">
+  <div class="row">
+
+    <!-- ═══ SIDEBAR ═══ -->
+    <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar py-3">
+      <div class="position-sticky">
+        <h6 class="sidebar-heading px-3 mb-3 text-muted">
+          <i class="bi bi-speedometer2 me-2"></i>Panel Admin
+        </h6>
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link" [class.active]="activeTab === 'dashboard'"
+               href="javascript:void(0)" (click)="activeTab = 'dashboard'">
+              <i class="bi bi-house me-2"></i>Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" [class.active]="activeTab === 'noticias'"
+               href="javascript:void(0)" (click)="activeTab = 'noticias'">
+              <i class="bi bi-newspaper me-2"></i>Noticias
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" [class.active]="activeTab === 'pendientes'"
+               href="javascript:void(0)" (click)="activeTab = 'pendientes'">
+              <i class="bi bi-hourglass-split me-2"></i>Pendientes
+              <span *ngIf="noticiasPendientes.length > 0" class="badge bg-warning text-dark ms-1">
+                {{ noticiasPendientes.length }}
+              </span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" [class.active]="activeTab === 'usuarios'"
+               href="javascript:void(0)" (click)="activeTab = 'usuarios'">
+              <i class="bi bi-people me-2"></i>Usuarios
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" [class.active]="activeTab === 'solicitudes'"
+               href="javascript:void(0)" (click)="activeTab = 'solicitudes'">
+              <i class="bi bi-envelope-paper me-2"></i>Solicitudes
+              <span *ngIf="solicitudesPendientes > 0" class="badge bg-danger ms-1">
+                {{ solicitudesPendientes }}
+              </span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" [class.active]="activeTab === 'secciones'"
+               href="javascript:void(0)" (click)="activeTab = 'secciones'">
+              <i class="bi bi-folder me-2"></i>Secciones
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" [class.active]="activeTab === 'tipos'"
+               href="javascript:void(0)" (click)="activeTab = 'tipos'">
+              <i class="bi bi-tags me-2"></i>Destinatarios
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" [class.active]="activeTab === 'edificios'"
+               href="javascript:void(0)" (click)="activeTab = 'edificios'">
+              <i class="bi bi-building me-2"></i>Edificios
+            </a>
+          </li>
+        </ul>
+        <hr>
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link" href="javascript:void(0)" (click)="mostrarPerfil = true">
+              <i class="bi bi-person-circle me-2"></i>Mi perfil
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-danger" href="javascript:void(0)" (click)="logout()">
+              <i class="bi bi-box-arrow-left me-2"></i>Cerrar sesión
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- ═══ CONTENIDO PRINCIPAL ═══ -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+
+      <!-- Alertas globales -->
+      <div *ngIf="success" class="alert alert-success d-flex align-items-center" role="alert">
+        <i class="bi bi-check-circle me-2"></i>{{ success }}
+      </div>
+      <div *ngIf="error" class="alert alert-danger d-flex align-items-center justify-content-between" role="alert">
+        <span><i class="bi bi-exclamation-triangle me-2"></i>{{ error }}</span>
+        <button type="button" class="btn-close" (click)="error = ''"></button>
+      </div>
+
+      <!-- ════════════════ DASHBOARD ════════════════ -->
+      <div *ngIf="activeTab === 'dashboard'">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h1>Dashboard</h1>
+          <button class="btn btn-primary" (click)="openNoticiaModal()">
+            <i class="bi bi-plus-lg me-1"></i> Nueva Noticia
+          </button>
+        </div>
+        <div class="row g-4 mb-5">
+          <div class="col-md-3 col-sm-6">
+            <div class="card bg-primary text-white">
+              <div class="card-body">
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <h6 class="text-white-50">Total Noticias</h6>
+                    <h2 class="mb-0">{{ noticias.length }}</h2>
+                  </div>
+                  <i class="bi bi-newspaper fs-1 opacity-50"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <div class="card bg-success text-white">
+              <div class="card-body">
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <h6 class="text-white-50">Publicadas</h6>
+                    <h2 class="mb-0">{{ noticiasPublicadas.length }}</h2>
+                  </div>
+                  <i class="bi bi-check-circle fs-1 opacity-50"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <div class="card bg-warning text-dark">
+              <div class="card-body">
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <h6 class="opacity-75">Borradores</h6>
+                    <h2 class="mb-0">{{ noticiasBorradores.length }}</h2>
+                  </div>
+                  <i class="bi bi-pencil fs-1 opacity-50"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <div class="card bg-info text-white">
+              <div class="card-body">
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <h6 class="text-white-50">Usuarios</h6>
+                    <h2 class="mb-0">{{ usuarios.length }}</h2>
+                  </div>
+                  <i class="bi bi-people fs-1 opacity-50"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla de noticias recientes -->
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center bg-white">
+            <h5 class="mb-0">Noticias Recientes</h5>
+            <button class="btn btn-sm btn-outline-primary" (click)="activeTab = 'noticias'">Ver todas</button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+              <thead>
+                <tr>
+                  <th style="width:40px;"></th>
+                  <th style="width:70px;">Imagen</th>
+                  <th>Título</th>
+                  <th>Categoría</th>
+                  <th>Autor</th>
+                  <th>Estado</th>
+                  <th>Fecha</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let n of noticiasRecientes">
+                  <td><input type="checkbox" class="form-check-input"></td>
+                  <td>
+                    <div class="noticia-thumb" *ngIf="n.imagen">
+                      <img [src]="n.imagen" [alt]="n.titulo">
+                    </div>
+                    <div class="noticia-thumb-placeholder" *ngIf="!n.imagen">
+                      <i class="bi bi-image text-muted"></i>
+                    </div>
+                  </td>
+                  <td>
+                    <a href="javascript:void(0)" class="text-decoration-none fw-semibold" (click)="openNoticiaModal(n)">
+                      {{ n.titulo }}
+                    </a>
+                  </td>
+                  <td>
+                    <span class="badge seccion-badge">{{ getSeccionNombre(n.seccionId) }}</span>
+                  </td>
+                  <td class="text-muted small">{{ n.publicadoPor }}</td>
+                  <td>
+                    <span *ngIf="n.estado === 'PUBLICADO'" class="badge bg-success">Publicado</span>
+                    <span *ngIf="n.estado === 'BORRADOR'" class="badge bg-warning text-dark">Borrador</span>
+                  </td>
+                  <td class="small text-muted">{{ formatDate(n.fechaPublicacion) }}</td>
+                  <td>
+                    <button class="btn btn-sm btn-icon me-1" (click)="openNoticiaModal(n)" title="Editar">
+                      <i class="bi bi-pencil text-primary"></i>
+                    </button>
+                    <button class="btn btn-sm btn-icon me-1" (click)="verLectores(n)" title="Lectores">
+                      <i class="bi bi-eye text-secondary"></i>
+                    </button>
+                    <button class="btn btn-sm btn-icon" (click)="deleteNoticia(n.id!)" title="Eliminar">
+                      <i class="bi bi-trash text-danger"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="noticias.length === 0">
+                  <td colspan="8" class="text-center text-muted py-4">No hay noticias todavía.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════ NOTICIAS ════════════════ -->
+      <div *ngIf="activeTab === 'noticias'">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h1>Gestión de Noticias</h1>
+          <button class="btn btn-primary" (click)="openNoticiaModal()">
+            <i class="bi bi-plus-lg me-1"></i> Nueva Noticia
+          </button>
+        </div>
+
+        <!-- Filtros -->
+        <div class="card mb-3 p-3">
+          <div class="row g-2 align-items-center">
+            <div class="col-md-4">
+              <select class="form-select" [(ngModel)]="filtroEstadoNoticias" name="filtroEstadoNoticias">
+                <option value="">Todos los estados</option>
+                <option value="PUBLICADO">Publicado</option>
+                <option value="BORRADOR">Borrador</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <select class="form-select" [(ngModel)]="filtroSeccionNoticias" name="filtroSeccionNoticias">
+                <option value="">Todas las categorías</option>
+                <option *ngFor="let s of secciones" [value]="s.id">{{ s.nombre }}</option>
+              </select>
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+              <button class="btn btn-outline-primary flex-fill" (click)="aplicarFiltrosNoticias()">
+                <i class="bi bi-funnel me-1"></i>Filtrar
+              </button>
+              <button class="btn btn-outline-secondary flex-fill" (click)="limpiarFiltrosNoticias()">
+                <i class="bi bi-x-circle me-1"></i>Limpiar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla de noticias -->
+        <div class="card">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+              <thead>
+                <tr>
+                  <th style="width:40px;">
+                    <input type="checkbox" class="form-check-input"
+                           (change)="toggleSeleccionarTodasNoticias($event)"
+                           [checked]="todasNoticiasFiltradas && todasSeleccionadas">
+                  </th>
+                  <th style="width:70px;">Imagen</th>
+                  <th>Título</th>
+                  <th>Categoría</th>
+                  <th>Autor</th>
+                  <th>Estado</th>
+                  <th>Fecha</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let n of noticiasFiltradas">
+                  <td>
+                    <input type="checkbox" class="form-check-input"
+                           [(ngModel)]="n.seleccionada"
+                           (ngModelChange)="onNoticiaSeleccionadaChange()">
+                  </td>
+                  <td>
+                    <div class="noticia-thumb" *ngIf="n.imagen">
+                      <img [src]="n.imagen" [alt]="n.titulo">
+                    </div>
+                    <div class="noticia-thumb-placeholder" *ngIf="!n.imagen">
+                      <i class="bi bi-image text-muted"></i>
+                    </div>
+                  </td>
+                  <td>
+                    <a href="javascript:void(0)" class="text-decoration-none fw-semibold" (click)="openNoticiaModal(n)">
+                      {{ n.titulo }}
+                    </a>
+                  </td>
+                  <td>
+                    <span class="badge seccion-badge">{{ getSeccionNombre(n.seccionId) }}</span>
+                  </td>
+                  <td class="text-muted small">{{ n.publicadoPor }}</td>
+                  <td>
+                    <span *ngIf="n.estado === 'PUBLICADO'" class="badge bg-success">Publicado</span>
+                    <span *ngIf="n.estado === 'BORRADOR'" class="badge bg-warning text-dark">Borrador</span>
+                  </td>
+                  <td class="small text-muted">{{ formatDate(n.fechaPublicacion) }}</td>
+                  <td>
+                    <button class="btn btn-sm btn-icon me-1" (click)="openNoticiaModal(n)" title="Editar">
+                      <i class="bi bi-pencil text-primary"></i>
+                    </button>
+                    <button class="btn btn-sm btn-icon me-1" (click)="verLectores(n)" title="Lectores">
+                      <i class="bi bi-eye text-secondary"></i>
+                    </button>
+                    <button class="btn btn-sm btn-icon me-1" (click)="descargarNoticiaPDF(n)" title="Descargar PDF">
+                      <i class="bi bi-file-earmark-pdf text-success"></i>
+                    </button>
+                    <button class="btn btn-sm btn-icon" (click)="deleteNoticia(n.id!)" title="Eliminar">
+                      <i class="bi bi-trash text-danger"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="noticiasFiltradas.length === 0">
+                  <td colspan="8" class="text-center text-muted py-5">
+                    <i class="bi bi-newspaper fs-1 d-block mb-2 opacity-25"></i>
+                    No hay noticias con los filtros aplicados.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════ PENDIENTES (de celadores) ════════════════ -->
+      <div *ngIf="activeTab === 'pendientes'">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h1>Pendientes de autorización</h1>
+          <span class="badge bg-warning text-dark fs-6">{{ noticiasPendientes.length }} pendiente(s)</span>
+        </div>
+        <div class="row g-4">
+          <div class="col-md-6 col-lg-4" *ngFor="let n of noticiasPendientes">
+            <div class="card h-100 border-warning news-card">
+              <div class="noticia-card-img" *ngIf="n.imagen">
+                <img [src]="n.imagen" [alt]="n.titulo">
+              </div>
+              <div class="card-body">
+                <div class="mb-2 d-flex flex-wrap gap-1">
+                  <span class="badge bg-warning text-dark">Borrador de celador</span>
+                  <span class="badge bg-success">{{ getSeccionNombre(n.seccionId) }}</span>
+                </div>
+                <h6 class="card-title">{{ n.titulo }}</h6>
+                <p class="card-text small text-muted dx-excerpt">{{ n.descripcion }}</p>
+                <small class="text-muted">
+                  <i class="bi bi-person me-1"></i>{{ n.publicadoPor }}
+                  · {{ formatDate(n.fechaPublicacion) }}
+                </small>
+              </div>
+              <div class="card-footer bg-white">
+                <div class="btn-group btn-group-sm w-100">
+                  <button class="btn btn-success" (click)="autorizarNoticia(n)">
+                    <i class="bi bi-check-lg me-1"></i>Autorizar
+                  </button>
+                  <button class="btn btn-outline-primary" (click)="openNoticiaModal(n)">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="btn btn-outline-danger" (click)="deleteNoticia(n.id!)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-12" *ngIf="noticiasPendientes.length === 0">
+            <div class="text-center py-5 text-muted">
+              <i class="bi bi-check2-circle fs-1 d-block mb-2"></i>
+              No hay noticias pendientes de autorización.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════ USUARIOS ════════════════ -->
+      <div *ngIf="activeTab === 'usuarios'">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h1>Usuarios</h1>
+          <button class="btn btn-primary" (click)="openUserModal()">
+            <i class="bi bi-person-plus me-1"></i> Nuevo Usuario
+          </button>
+        </div>
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <div class="card bg-primary text-white">
+              <div class="card-body py-3 d-flex justify-content-between align-items-center">
+                <div><h6 class="text-white-50 mb-0">Directores</h6><h3 class="mb-0">{{ totalDirectores }}</h3></div>
+                <i class="bi bi-person-badge fs-2 opacity-50"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card bg-info text-white">
+              <div class="card-body py-3 d-flex justify-content-between align-items-center">
+                <div><h6 class="text-white-50 mb-0">Celadores</h6><h3 class="mb-0">{{ totalCeladores }}</h3></div>
+                <i class="bi bi-shield-check fs-2 opacity-50"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card bg-success text-white">
+              <div class="card-body py-3 d-flex justify-content-between align-items-center">
+                <div><h6 class="text-white-50 mb-0">Residentes</h6><h3 class="mb-0">{{ totalResidentes }}</h3></div>
+                <i class="bi bi-people fs-2 opacity-50"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="input-group mb-3" style="max-width: 380px;">
+          <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+          <input type="text" class="form-control" placeholder="Buscar por nombre, email o rol…"
+                 [(ngModel)]="busquedaUsuario" name="busquedaUsuario">
+          <button *ngIf="busquedaUsuario" class="btn btn-outline-secondary" (click)="busquedaUsuario = ''">
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+        <div class="card">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Email</th>
+                  <th>Rol</th>
+                  <th>Género</th>
+                  <th>Facultad</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let u of usuariosFiltrados">
+                  <td class="fw-semibold">{{ u.nombre }} {{ u.apellidos }}</td>
+                  <td>{{ u.email }}</td>
+                  <td>
+                    <span class="badge"
+                          [class.bg-primary]="(u.rol + '').toLowerCase() === 'director'"
+                          [class.bg-info]="(u.rol + '').toLowerCase() === 'celador'"
+                          [class.bg-success]="(u.rol + '').toLowerCase() === 'residente'">
+                      {{ u.rol }}
+                    </span>
+                  </td>
+                  <td>{{ getNombreGenero(u.genero || '') }}</td>
+                  <td>{{ u.facultad || '—' }}</td>
+                  <td>
+                    <span class="badge" [class.bg-success]="u.activo" [class.bg-secondary]="!u.activo">
+                      {{ u.activo ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </td>
+                  <td>
+                    <button class="btn btn-sm btn-icon me-1" (click)="openUserModal(u)" title="Editar">
+                      <i class="bi bi-pencil text-primary"></i>
+                    </button>
+                    <button class="btn btn-sm btn-icon" (click)="deleteUser(u.id!)" title="Eliminar">
+                      <i class="bi bi-trash text-danger"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="usuariosFiltrados.length === 0">
+                  <td colspan="7" class="text-center text-muted py-4">No se encontraron usuarios.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════ SOLICITUDES ════════════════ -->
+      <div *ngIf="activeTab === 'solicitudes'">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h1>Solicitudes de registro</h1>
+          <button class="btn btn-outline-primary btn-sm" (click)="loadSolicitudes()">
+            <i class="bi bi-arrow-clockwise me-1"></i>Recargar
+          </button>
+        </div>
+
+        <div *ngIf="errorSolicitudes"
+             class="alert alert-danger d-flex align-items-center justify-content-between mb-3">
+          <span><i class="bi bi-exclamation-triangle me-2"></i>{{ errorSolicitudes }}</span>
+          <button class="btn btn-sm btn-danger" (click)="loadSolicitudes()">
+            <i class="bi bi-arrow-clockwise me-1"></i>Reintentar
+          </button>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap mb-3">
+          <button class="btn btn-sm"
+                  [class.btn-warning]="filtroEstado === 'PENDIENTE'"
+                  [class.btn-outline-warning]="filtroEstado !== 'PENDIENTE'"
+                  (click)="setFiltroEstado('PENDIENTE')">
+            Pendientes <span class="badge bg-dark ms-1">{{ contarPorEstado('PENDIENTE') }}</span>
+          </button>
+          <button class="btn btn-sm"
+                  [class.btn-success]="filtroEstado === 'APROBADA'"
+                  [class.btn-outline-success]="filtroEstado !== 'APROBADA'"
+                  (click)="setFiltroEstado('APROBADA')">
+            Aprobadas <span class="badge bg-dark ms-1">{{ contarPorEstado('APROBADA') }}</span>
+          </button>
+          <button class="btn btn-sm"
+                  [class.btn-danger]="filtroEstado === 'RECHAZADA'"
+                  [class.btn-outline-danger]="filtroEstado !== 'RECHAZADA'"
+                  (click)="setFiltroEstado('RECHAZADA')">
+            Rechazadas <span class="badge bg-dark ms-1">{{ contarPorEstado('RECHAZADA') }}</span>
+          </button>
+          <div class="input-group ms-auto" style="max-width: 320px;">
+            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" placeholder="Buscar solicitud…"
+                   [(ngModel)]="busquedaSolicitud" name="busquedaSolicitud">
+            <button *ngIf="busquedaSolicitud" class="btn btn-outline-secondary"
+                    (click)="busquedaSolicitud = ''">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+              <thead>
+                <tr>
+                  <th>Solicitante</th>
+                  <th>Email</th>
+                  <th>Facultad</th>
+                  <th>Edificio</th>
+                  <th>Habitación</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="loadingSolicitudes">
+                  <td colspan="7" class="text-center py-5">
+                    <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+                    Cargando solicitudes…
+                  </td>
+                </tr>
+                <ng-container *ngIf="!loadingSolicitudes && !errorSolicitudes">
+                  <tr *ngFor="let s of solicitudesFiltradas">
+                    <td class="fw-semibold">{{ s.nombre }} {{ s.apellidos }}</td>
+                    <td>{{ s.email }}</td>
+                    <td>{{ s.facultad || '—' }}</td>
+                    <td>{{ s.edificio || '—' }}</td>
+                    <td>{{ s.habitacion || '—' }}</td>
+                    <td>
+                      <span class="badge"
+                            [class.bg-warning]="s.estado === 'PENDIENTE'"
+                            [class.text-dark]="s.estado === 'PENDIENTE'"
+                            [class.bg-success]="s.estado === 'APROBADA'"
+                            [class.bg-danger]="s.estado === 'RECHAZADA'"
+                            [class.bg-secondary]="s.estado !== 'PENDIENTE' && s.estado !== 'APROBADA' && s.estado !== 'RECHAZADA'">
+                        {{ s.estado }}
+                      </span>
+                    </td>
+                    <td>
+                      <button class="btn btn-sm btn-icon me-1"
+                              [disabled]="s.estado !== 'PENDIENTE'"
+                              (click)="aprobarSolicitud(s.id!)" title="Aprobar">
+                        <i class="bi bi-check-lg text-success"></i>
+                      </button>
+                      <button class="btn btn-sm btn-icon"
+                              [disabled]="s.estado !== 'PENDIENTE'"
+                              (click)="rechazarSolicitud(s.id!)" title="Rechazar">
+                        <i class="bi bi-x-lg text-danger"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="solicitudesFiltradas.length === 0">
+                    <td colspan="7" class="text-center text-muted py-5">
+                      <i class="bi bi-inbox fs-1 d-block mb-2 opacity-25"></i>
+                      {{ filtroEstado
+                          ? 'No hay solicitudes con estado ' + filtroEstado + '.'
+                          : 'No hay solicitudes registradas.' }}
+                    </td>
+                  </tr>
+                </ng-container>
+                <tr *ngIf="!loadingSolicitudes && errorSolicitudes">
+                  <td colspan="7" class="text-center text-danger py-5">
+                    <i class="bi bi-wifi-off fs-2 d-block mb-2"></i>
+                    No se pudieron cargar los datos. Usa el botón Reintentar.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════ SECCIONES ════════════════ -->
+      <div *ngIf="activeTab === 'secciones'">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h1>Secciones</h1>
+          <button class="btn btn-primary" (click)="openSeccionModal()">
+            <i class="bi bi-plus-lg me-1"></i> Nueva Sección
+          </button>
+        </div>
+        <div class="card">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Descripción</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of secciones">
+                  <td><span class="badge bg-success">{{ s.nombre }}</span></td>
+                  <td class="text-muted">{{ s.descripcion || '—' }}</td>
+                  <td>
+                    <button class="btn btn-sm btn-icon me-1" (click)="openSeccionModal(s)" title="Editar">
+                      <i class="bi bi-pencil text-primary"></i>
+                    </button>
+                    <button class="btn btn-sm btn-icon me-1" (click)="toggleSeccion(s)" title="Activar / Desactivar">
+                      <i class="bi bi-toggle2-on text-warning"></i>
+                    </button>
+                    <button class="btn btn-sm btn-icon" (click)="deleteSeccion(s.id!)" title="Eliminar">
+                      <i class="bi bi-trash text-danger"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="secciones.length === 0">
+                  <td colspan="3" class="text-center text-muted py-4">No hay secciones.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════ TIPOS DE DESTINATARIO ════════════════ -->
+      <div *ngIf="activeTab === 'tipos'">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h1>Tipos de destinatario</h1>
+          <button class="btn btn-primary" (click)="openTipoModal()">
+            <i class="bi bi-plus-lg me-1"></i> Nuevo Tipo
+          </button>
+        </div>
+        <div class="card">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+              <thead>
+                <tr>
+                  <th>Tipo</th>
+                  <th>Descripción</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let t of todosTipos">
+                  <td class="fw-semibold">{{ iconoPorNombre(t.nombre) }} {{ t.nombre }}</td>
+                  <td class="text-muted">{{ t.descripcion }}</td>
+                  <td>
+                    <span class="badge" [class.bg-success]="t.activo" [class.bg-secondary]="!t.activo">
+                      {{ t.activo ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </td>
+                  <td>
+                    <button class="btn btn-sm btn-icon me-1" (click)="openTipoModal(t)" title="Editar">
+                      <i class="bi bi-pencil text-primary"></i>
+                    </button>
+                    <button class="btn btn-sm btn-icon" (click)="toggleTipo(t)" title="Activar / Desactivar">
+                      <i class="bi bi-toggle2-on text-warning"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="todosTipos.length === 0">
+                  <td colspan="4" class="text-center text-muted py-4">No hay tipos de destinatario.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════ EDIFICIOS ════════════════ -->
+      <div *ngIf="activeTab === 'edificios'">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h1>Edificios</h1>
+          <button class="btn btn-primary" (click)="openEdificioModal()">
+            <i class="bi bi-plus-lg me-1"></i> Nuevo Edificio
+          </button>
+        </div>
+        <div class="card">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Plantas</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let e of todosEdificios">
+                  <td class="fw-semibold"><i class="bi bi-building me-2 text-primary"></i>{{ e.nombre }}</td>
+                  <td>{{ e.numPlantas }}</td>
+                  <td>
+                    <span class="badge" [class.bg-success]="e.activo" [class.bg-secondary]="!e.activo">
+                      {{ e.activo ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </td>
+                  <td>
+                    <button class="btn btn-sm btn-icon me-1" (click)="openEdificioModal(e)" title="Editar">
+                      <i class="bi bi-pencil text-primary"></i>
+                    </button>
+                    <button class="btn btn-sm btn-icon" (click)="toggleEdificio(e)" title="Activar / Desactivar">
+                      <i class="bi bi-toggle2-on text-warning"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="todosEdificios.length === 0">
+                  <td colspan="4" class="text-center text-muted py-4">No hay edificios.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     MODAL: NOTICIA (crear / editar)
+════════════════════════════════════════════════════════════════ -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="showNoticiaModal">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-newspaper me-2"></i>{{ editingNoticia ? 'Editar Noticia' : 'Nueva Noticia' }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeNoticiaModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="error" class="alert alert-danger py-2">{{ error }}</div>
+        <div class="mb-3">
+          <label class="form-label">Título *</label>
+          <input type="text" class="form-control" [class.is-invalid]="erroresNoticia['titulo']"
+                 [(ngModel)]="noticiaForm.titulo" name="titulo" placeholder="Título de la noticia">
+          <div class="invalid-feedback" *ngIf="erroresNoticia['titulo']">{{ erroresNoticia['titulo'] }}</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Descripción *</label>
+          <textarea class="form-control" rows="5" [class.is-invalid]="erroresNoticia['descripcion']"
+                    [(ngModel)]="noticiaForm.descripcion" name="descripcion"
+                    placeholder="Contenido de la noticia…"></textarea>
+          <div class="invalid-feedback" *ngIf="erroresNoticia['descripcion']">{{ erroresNoticia['descripcion'] }}</div>
+        </div>
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Sección *</label>
+            <select class="form-select" [class.is-invalid]="erroresNoticia['seccionId']"
+                    [(ngModel)]="noticiaForm.seccionId" name="seccionId">
+              <option [ngValue]="undefined" disabled>Selecciona…</option>
+              <option *ngFor="let s of secciones" [ngValue]="s.id">{{ s.nombre }}</option>
+            </select>
+            <div class="invalid-feedback" *ngIf="erroresNoticia['seccionId']">{{ erroresNoticia['seccionId'] }}</div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Prioridad</label>
+            <select class="form-select" [(ngModel)]="noticiaForm.prioridad" name="prioridad">
+              <option value="NORMAL">Normal</option>
+              <option value="DESTACADA">Destacada</option>
+              <option value="URGENTE">Urgente</option>
+            </select>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Estado</label>
+            <select class="form-select" [(ngModel)]="noticiaForm.estado" name="estado">
+              <option value="PUBLICADO">Publicado</option>
+              <option value="BORRADOR">Borrador</option>
+            </select>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Imagen</label>
+          <label class="form-control text-center" style="cursor:pointer">
+            <i class="bi bi-cloud-arrow-up me-2"></i>
+            {{ selectedImageFile ? selectedImageFile.name : 'Haz clic para subir una imagen' }}
+            <input type="file" accept="image/*" hidden (change)="onFileSelected($event)">
+          </label>
+          <div class="noticia-modal-preview mt-2" *ngIf="noticiaPreview">
+            <img [src]="noticiaPreview" alt="Vista previa">
+          </div>
+        </div>
+        <hr>
+        <label class="form-label d-block">Destinatarios</label>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <button type="button" class="btn btn-sm"
+                  *ngFor="let t of tipos"
+                  [class.btn-primary]="tipoSeleccionado?.id === t.id"
+                  [class.btn-outline-primary]="tipoSeleccionado?.id !== t.id"
+                  (click)="seleccionarTipo(t)">
+            {{ iconoPorNombre(t.nombre) }} {{ t.nombre }}
+          </button>
+        </div>
+        <ng-container *ngIf="tipoNecesitaValor && tipoSeleccionado">
+          <div class="mb-3" *ngIf="tipoSeleccionado.nombre === 'FACULTAD'">
+            <label class="form-label">Facultad *</label>
+            <select class="form-select" [class.is-invalid]="erroresNoticia['destinatario']"
+                    [(ngModel)]="valorDestinatario" name="valorFacultad">
+              <option value="" disabled>Selecciona facultad…</option>
+              <option *ngFor="let f of valoresFiltro.facultades" [value]="f">{{ f }}</option>
+            </select>
+          </div>
+          <div class="mb-3" *ngIf="tipoSeleccionado.nombre === 'GENERO'">
+            <label class="form-label">Género *</label>
+            <select class="form-select" [class.is-invalid]="erroresNoticia['destinatario']"
+                    [(ngModel)]="valorDestinatario" name="valorGenero">
+              <option value="" disabled>Selecciona género…</option>
+              <option *ngFor="let g of valoresFiltro.generos" [value]="g">{{ getNombreGenero(g) }}</option>
+            </select>
+          </div>
+          <div class="mb-3" *ngIf="tipoSeleccionado.nombre === 'SELECCION'">
+            <label class="form-label">Selección *</label>
+            <select class="form-select" [class.is-invalid]="erroresNoticia['destinatario']"
+                    [(ngModel)]="valorDestinatario" name="valorSeleccion">
+              <option value="" disabled>Selecciona…</option>
+              <option *ngFor="let s of valoresFiltro.selecciones" [value]="s">{{ s }}</option>
+            </select>
+          </div>
+          <div class="mb-3" *ngIf="tipoSeleccionado.nombre === 'EDIFICIO'">
+            <label class="form-label">Edificio *</label>
+            <select class="form-select" [class.is-invalid]="erroresNoticia['destinatario']"
+                    [(ngModel)]="valorDestinatario" name="valorEdificio">
+              <option value="" disabled>Selecciona edificio…</option>
+              <option *ngFor="let e of edificios" [value]="e.nombre">{{ e.nombre }}</option>
+            </select>
+          </div>
+          <div class="row" *ngIf="tipoSeleccionado.nombre === 'HABITACION'">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Edificio *</label>
+              <select class="form-select" name="edificioHab"
+                      [ngModel]="edificioSeleccionado"
+                      (ngModelChange)="onEdificioChange($event)">
+                <option [ngValue]="null" disabled>Selecciona edificio…</option>
+                <option *ngFor="let e of edificios" [ngValue]="e.id">{{ e.nombre }}</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3" *ngIf="habitaciones.length > 0">
+              <label class="form-label">Habitación *</label>
+              <select class="form-select" [class.is-invalid]="erroresNoticia['destinatario']"
+                      [(ngModel)]="valorDestinatario" name="valorHabitacion">
+                <option value="" disabled>Selecciona habitación…</option>
+                <optgroup *ngFor="let p of plantasDelEdificio" [label]="'Planta ' + p">
+                  <option *ngFor="let h of habitacionesPorPlanta(p)" [value]="h.numero">
+                    Habitación {{ h.numero }}
+                  </option>
+                </optgroup>
+              </select>
+            </div>
+          </div>
+          <div class="mb-3"
+               *ngIf="['FACULTAD','GENERO','SELECCION','EDIFICIO','HABITACION'].indexOf(tipoSeleccionado.nombre) === -1">
+            <label class="form-label">Valor para "{{ tipoSeleccionado.nombre }}" *</label>
+            <input type="text" class="form-control" [class.is-invalid]="erroresNoticia['destinatario']"
+                   [(ngModel)]="valorDestinatario" name="valorLibre" placeholder="Indica el valor…">
+          </div>
+          <div class="text-danger small mb-2" *ngIf="erroresNoticia['destinatario']">
+            {{ erroresNoticia['destinatario'] }}
+          </div>
+        </ng-container>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeNoticiaModal()">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="saveNoticia()" [disabled]="isLoading">
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1"></span>
+          {{ editingNoticia ? 'Guardar cambios' : 'Crear noticia' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ MODAL: USUARIO ════════════════ -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="showUserModal">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-person me-2"></i>{{ editingUser ? 'Editar Usuario' : 'Nuevo Usuario' }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeUserModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="error" class="alert alert-danger py-2">{{ error }}</div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Nombre *</label>
+            <input type="text" class="form-control" [class.is-invalid]="erroresUser['nombre']"
+                   [(ngModel)]="userForm.nombre" name="uNombre">
+            <div class="invalid-feedback" *ngIf="erroresUser['nombre']">{{ erroresUser['nombre'] }}</div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Apellidos</label>
+            <input type="text" class="form-control" [(ngModel)]="userForm.apellidos" name="uApellidos">
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Email *</label>
+            <input type="email" class="form-control" [class.is-invalid]="erroresUser['email']"
+                   [(ngModel)]="userForm.email" name="uEmail" placeholder="nombre@gmail.com">
+            <div class="invalid-feedback" *ngIf="erroresUser['email']">{{ erroresUser['email'] }}</div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Contraseña {{ editingUser ? '(dejar vacío para no cambiar)' : '*' }}</label>
+            <input type="password" class="form-control" [class.is-invalid]="erroresUser['password']"
+                   [(ngModel)]="userForm.password" name="uPassword">
+            <div class="invalid-feedback" *ngIf="erroresUser['password']">{{ erroresUser['password'] }}</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Rol *</label>
+            <select class="form-select" [class.is-invalid]="erroresUser['rolNombre']"
+                    [(ngModel)]="userForm.rolNombre" name="uRol">
+              <option value="Director">Director</option>
+              <option value="Celador">Celador</option>
+              <option value="Residente">Residente</option>
+            </select>
+            <div class="invalid-feedback" *ngIf="erroresUser['rolNombre']">{{ erroresUser['rolNombre'] }}</div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Género</label>
+            <select class="form-select" [(ngModel)]="userForm.genero" name="uGenero">
+              <option value="">—</option>
+              <option *ngFor="let g of valoresFiltro.generos" [value]="g">{{ getNombreGenero(g) }}</option>
+            </select>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Facultad</label>
+            <select class="form-select" [(ngModel)]="userForm.facultad" name="uFacultad">
+              <option value="">—</option>
+              <option *ngFor="let f of valoresFiltro.facultades" [value]="f">{{ f }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Selección</label>
+            <select class="form-select" [(ngModel)]="userForm.seleccion" name="uSeleccion">
+              <option value="">—</option>
+              <option *ngFor="let s of valoresFiltro.selecciones" [value]="s">{{ s }}</option>
+            </select>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Edificio</label>
+            <select class="form-select" name="uEdificio"
+                    [ngModel]="edificioSeleccionadoUsuario"
+                    (ngModelChange)="onEdificioUsuarioChange($event)">
+              <option [ngValue]="null">—</option>
+              <option *ngFor="let e of edificios" [ngValue]="e.id">{{ e.nombre }}</option>
+            </select>
+          </div>
+          <div class="col-md-4 mb-3" *ngIf="habitacionesUsuario.length > 0">
+            <label class="form-label">Habitación</label>
+            <select class="form-select" [(ngModel)]="userForm.habitacionId" name="uHabitacion">
+              <option [ngValue]="null">—</option>
+              <optgroup *ngFor="let p of plantasUsuario" [label]="'Planta ' + p">
+                <option *ngFor="let h of habitacionesUsuarioPorPlanta(p)" [ngValue]="h.id">
+                  Habitación {{ h.numero }}
+                </option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="uActivo"
+                 [(ngModel)]="userForm.activo" name="uActivo">
+          <label class="form-check-label" for="uActivo">Usuario activo</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeUserModal()">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="saveUser()" [disabled]="isLoading">
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1"></span>
+          {{ editingUser ? 'Guardar cambios' : 'Crear usuario' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ MODAL: SECCIÓN ════════════════ -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="showSeccionModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-folder me-2"></i>{{ editingSeccion ? 'Editar Sección' : 'Nueva Sección' }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeSeccionModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="error" class="alert alert-danger py-2">{{ error }}</div>
+        <div class="mb-3">
+          <label class="form-label">Nombre *</label>
+          <input type="text" class="form-control" [class.is-invalid]="erroresSeccion['nombre']"
+                 [(ngModel)]="seccionForm.nombre" name="sNombre" placeholder="Ej: Deportes">
+          <div class="invalid-feedback" *ngIf="erroresSeccion['nombre']">{{ erroresSeccion['nombre'] }}</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Descripción</label>
+          <textarea class="form-control" rows="3" [(ngModel)]="seccionForm.descripcion"
+                    name="sDescripcion" placeholder="Descripción de la sección…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeSeccionModal()">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="saveSeccion()" [disabled]="isLoading">
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1"></span>
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ MODAL: TIPO DESTINATARIO ════════════════ -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="showTipoModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-tags me-2"></i>{{ editingTipo ? 'Editar Tipo' : 'Nuevo Tipo' }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeTipoModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="error" class="alert alert-danger py-2">{{ error }}</div>
+        <div class="mb-3">
+          <label class="form-label">Nombre * (mayúsculas y guiones bajos)</label>
+          <input type="text" class="form-control" [class.is-invalid]="erroresTipo['nombre']"
+                 [(ngModel)]="tipoForm.nombre" name="tNombre" placeholder="Ej: GRUPO_ESPECIAL">
+          <div class="invalid-feedback" *ngIf="erroresTipo['nombre']">{{ erroresTipo['nombre'] }}</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Descripción *</label>
+          <textarea class="form-control" rows="3" [class.is-invalid]="erroresTipo['descripcion']"
+                    [(ngModel)]="tipoForm.descripcion" name="tDescripcion"></textarea>
+          <div class="invalid-feedback" *ngIf="erroresTipo['descripcion']">{{ erroresTipo['descripcion'] }}</div>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="tActivo"
+                 [(ngModel)]="tipoForm.activo" name="tActivo">
+          <label class="form-check-label" for="tActivo">Activo</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeTipoModal()">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="saveTipo()" [disabled]="isLoading">
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1"></span>
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ MODAL: EDIFICIO ════════════════ -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="showEdificioModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-building me-2"></i>{{ editingEdificio ? 'Editar Edificio' : 'Nuevo Edificio' }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeEdificioModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="error" class="alert alert-danger py-2">{{ error }}</div>
+        <div class="mb-3">
+          <label class="form-label">Nombre *</label>
+          <input type="text" class="form-control" [class.is-invalid]="erroresEdificio['nombre']"
+                 [(ngModel)]="edificioForm.nombre" name="eNombre" placeholder="Ej: Edificio A">
+          <div class="invalid-feedback" *ngIf="erroresEdificio['nombre']">{{ erroresEdificio['nombre'] }}</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Número de plantas *</label>
+          <input type="number" min="1" class="form-control" [class.is-invalid]="erroresEdificio['numPlantas']"
+                 [(ngModel)]="edificioForm.numPlantas" name="eNumPlantas">
+          <div class="invalid-feedback" *ngIf="erroresEdificio['numPlantas']">{{ erroresEdificio['numPlantas'] }}</div>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="eActivo"
+                 [(ngModel)]="edificioForm.activo" name="eActivo">
+          <label class="form-check-label" for="eActivo">Activo</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeEdificioModal()">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="saveEdificio()" [disabled]="isLoading">
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1"></span>
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ MODAL: LECTORES ════════════════ -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="lectoresModal">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-eye me-2"></i>Lectores — {{ noticiaSeleccionada?.titulo }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="cerrarLectoresModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="loadingLecturas" class="text-center py-4">
+          <div class="spinner-border text-primary"></div>
+        </div>
+        <ng-container *ngIf="!loadingLecturas">
+          <p class="text-muted">
+            <i class="bi bi-people me-1"></i>Total de lectores: <strong>{{ lecturasTotal }}</strong>
+          </p>
+          <div class="table-responsive" *ngIf="noticiaLecturas.length > 0">
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr>
+                  <th>Lector</th>
+                  <th>Email</th>
+                  <th>Fecha de lectura</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let l of noticiaLecturas">
+                  <td class="fw-semibold">{{ $any(l).nombre }} {{ $any(l).apellidos }}</td>
+                  <td>{{ $any(l).email }}</td>
+                  <td>{{ formatDateTime($any(l).fechaLectura) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="text-center py-4 text-muted" *ngIf="noticiaLecturas.length === 0">
+            <i class="bi bi-eye-slash fs-1 d-block mb-2"></i>
+            Nadie ha leído esta noticia todavía.
+          </div>
+          <div class="d-flex justify-content-between align-items-center" *ngIf="lecturasTotalPaginas > 1">
+            <button class="btn btn-sm btn-outline-primary"
+                    [disabled]="lecturasPagina === 0" (click)="lecturasPaginaAnterior()">
+              <i class="bi bi-chevron-left"></i> Anterior
+            </button>
+            <span class="text-muted small">Página {{ lecturasPagina + 1 }} de {{ lecturasTotalPaginas }}</span>
+            <button class="btn btn-sm btn-outline-primary"
+                    [disabled]="lecturasPagina >= lecturasTotalPaginas - 1" (click)="lecturasPaginaSiguiente()">
+              Siguiente <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+        </ng-container>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cerrarLectoresModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Backdrop común para los modales -->
+<div class="modal-backdrop fade show"
+     *ngIf="showNoticiaModal || showUserModal || showSeccionModal || showTipoModal || showEdificioModal || lectoresModal">
+</div>
+
+<!-- ════════════════ PERFIL ════════════════ -->
+<app-perfil *ngIf="mostrarPerfil"
+            [usuario]="currentUser"
+            (cerrar)="mostrarPerfil = false; recargarUsuario()"
+            (perfilActualizado)="onPerfilActualizado($event)">
+</app-perfil>

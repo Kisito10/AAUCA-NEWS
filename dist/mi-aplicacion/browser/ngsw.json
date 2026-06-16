@@ -1,0 +1,101 @@
+{
+  "configVersion": 1,
+  "timestamp": 1781568713039,
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/chunk-3PHWCPLM.js",
+        "/chunk-44X7AKOR.js",
+        "/chunk-5HTDYDGB.js",
+        "/chunk-C4F6H3IX.js",
+        "/chunk-GUGYIVCM.js",
+        "/chunk-H7KAG3JL.js",
+        "/chunk-JQ7LHPJB.js",
+        "/chunk-L7U2EXKB.js",
+        "/chunk-MS42STTA.js",
+        "/chunk-QEYIRRAL.js",
+        "/chunk-TSCB6R2X.js",
+        "/chunk-UTPS3CU7.js",
+        "/chunk-VJXRZM7G.js",
+        "/chunk-XLPLCJ2R.js",
+        "/chunk-YTTWFNNM.js",
+        "/index.html",
+        "/main-3K6I42RY.js",
+        "/polyfills-FFHMD2TL.js",
+        "/scripts-SQ7W6IC7.js",
+        "/styles-GZFTO3O4.css"
+      ],
+      "patterns": []
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/assets/images/AAUCA.png",
+        "/assets/images/aauca (2).png",
+        "/assets/images/aauca completo.png",
+        "/assets/images/fas.png",
+        "/assets/images/residencia.png"
+      ],
+      "patterns": []
+    }
+  ],
+  "dataGroups": [],
+  "hashTable": {
+    "/assets/images/AAUCA.png": "936590a290d42edd223ce537ef149fe9ed476f2d",
+    "/assets/images/aauca (2).png": "8fe48acc026eabdb1a393b0c394886d5033dc552",
+    "/assets/images/aauca completo.png": "943fc126f97aa8c1147e20ca7b0e4279351812e6",
+    "/assets/images/fas.png": "dda1aefe1332d11448ab293b0fded152538aa540",
+    "/assets/images/residencia.png": "3be7d5add1df3a1d6d37bc10a677e516b674db05",
+    "/chunk-3PHWCPLM.js": "cf81b936ba5e255040f64918a00a7a1838919d01",
+    "/chunk-44X7AKOR.js": "4cd6f16d085450a029c18f4789cb8a51952834bb",
+    "/chunk-5HTDYDGB.js": "e68c25e068592f07859a0e34a117351ddc1ec007",
+    "/chunk-C4F6H3IX.js": "5a911f0b88c1a4ad3fb6e1729044b2bdbc2099af",
+    "/chunk-GUGYIVCM.js": "5986b084e8b9746b4126875c923e106318fbc54f",
+    "/chunk-H7KAG3JL.js": "74eca77c9861b2b4153ce772b3af3b47ffd18451",
+    "/chunk-JQ7LHPJB.js": "fdd31a22fade87fa1e86ebcd1a7106a61571d169",
+    "/chunk-L7U2EXKB.js": "aadde84c1c29d041bf4ce12bdbf0e3f9a21b5dcc",
+    "/chunk-MS42STTA.js": "f7be88a46fda26f49769ff1b8a2a7489b48f2a07",
+    "/chunk-QEYIRRAL.js": "427a650f05152441c8d613338bd612fce488e30e",
+    "/chunk-TSCB6R2X.js": "1e95d1d1930c00408cbe1b684fcb53953f0d30c7",
+    "/chunk-UTPS3CU7.js": "d93840e133fccd35f307213aceba212a19823aab",
+    "/chunk-VJXRZM7G.js": "ef963bf08123a7fa5f5fb160f22cf99489945372",
+    "/chunk-XLPLCJ2R.js": "3ee30a3555307d96dba9cbfadf114ee1309b4bf0",
+    "/chunk-YTTWFNNM.js": "6eff664d8156167d8ed1fe12137982be40be160c",
+    "/index.html": "9adf01ff3ed89284cb9934cbe5725b564d431411",
+    "/main-3K6I42RY.js": "168245133892da0166c5758ad0b202665ec71510",
+    "/polyfills-FFHMD2TL.js": "f49b49a155bc7d192db62a4c15d0a612b460a667",
+    "/scripts-SQ7W6IC7.js": "5119cd2cbdf65456a959d73a4eb77b48941820cc",
+    "/styles-GZFTO3O4.css": "e50d4fa7f606d363286b10450a93054c394da085"
+  },
+  "navigationUrls": [
+    {
+      "positive": true,
+      "regex": "^\\/.*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*\\.[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*\\/.*$"
+    }
+  ],
+  "navigationRequestStrategy": "performance"
+}

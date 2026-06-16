@@ -1,0 +1,884 @@
+<!-- ════════════════════════════════════════════════════════════
+     AAUCA NEWS — celador.component.html
+     ════════════════════════════════════════════════════════════ -->
+
+<!-- ═══ NAVBAR ══════════════════════════════════════════════════ -->
+<nav class="navbar navbar-expand-lg sticky-top">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand fw-bold fs-5">
+      <span class="brand-aauca">AAUCA</span><span class="brand-news">NEWS</span>
+    </a>
+    <div class="ms-auto d-flex align-items-center gap-3">
+      <span class="navbar-role-badge">PANEL CELADOR</span>
+      <button class="btn p-0 border-0 bg-transparent d-flex align-items-center gap-2"
+              (click)="mostrarPerfil = true" title="Editar mi perfil">
+        <img *ngIf="currentUser?.foto"
+             [src]="fotoUrl(currentUser?.foto)"
+             class="navbar-avatar"
+             style="object-fit:cover;">
+        <div *ngIf="!currentUser?.foto" class="navbar-avatar navbar-avatar-initials">
+          {{ currentUser?.nombre?.charAt(0)?.toUpperCase() }}
+        </div>
+        <span class="navbar-user-name">{{ currentUser?.nombre }}</span>
+      </button>
+      <button class="btn btn-logout btn-sm" (click)="logout()">Cerrar sesión</button>
+    </div>
+  </div>
+</nav>
+
+<app-perfil *ngIf="mostrarPerfil"
+            (cerrar)="mostrarPerfil = false; recargarUsuario()"
+            (perfilActualizado)="onPerfilActualizado($event)">
+</app-perfil>
+
+<!-- ═══ LAYOUT ═══════════════════════════════════════════════════ -->
+<div class="page-layout">
+
+  <!-- ── SIDEBAR ────────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+    <div class="sidebar-section-label">Panel Celador</div>
+      <a class="sidebar-link" [class.active]="vistaActual === 'dashboard'" (click)="cambiarVista('dashboard')">
+        <i class="ti ti-layout-dashboard"></i> Dashboard
+      </a>
+      <a class="sidebar-link" [class.active]="vistaActual === 'noticias'" (click)="cambiarVista('noticias')">
+        <i class="ti ti-news"></i> Noticias
+        <span class="sidebar-badge" *ngIf="borradores.length > 0">{{ borradores.length }}</span>
+      </a>
+      <a class="sidebar-link" [class.active]="vistaActual === 'estudiantes'" (click)="cambiarVista('estudiantes')">
+        <i class="ti ti-users"></i> Usuarios
+        <span class="sidebar-badge sidebar-badge-warn" *ngIf="pendientesCount > 0">{{ pendientesCount }}</span>
+      </a>
+      <a class="sidebar-link" [class.active]="vistaActual === 'solicitudes'" (click)="cambiarVista('solicitudes')">
+        <i class="ti ti-clipboard-list"></i> Solicitudes
+        <span class="sidebar-badge sidebar-badge-danger" *ngIf="solicitudesPendientesCount > 0">{{ solicitudesPendientesCount }}</span>
+      </a>
+      <a class="sidebar-link" (click)="mostrarPerfil = true">
+        <i class="ti ti-user-circle"></i> Mi perfil
+      </a>
+      <a class="sidebar-link sidebar-link-logout" (click)="logout()">
+        <i class="ti ti-logout"></i> Cerrar sesión
+      </a>
+    </nav>
+  </aside>
+
+  <!-- ── CONTENIDO ──────────────────────────────────────────────── -->
+  <main class="main-content">
+
+    <!-- ALERTAS GLOBALES -->
+    <div class="alert alert-danger alert-dismissible" *ngIf="error">
+      {{ error }}<button class="btn-close" (click)="error=''"></button>
+    </div>
+    <div class="alert alert-success alert-dismissible" *ngIf="mensajeExito">
+      {{ mensajeExito }}<button class="btn-close" (click)="mensajeExito=''"></button>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════
+         VISTA: DASHBOARD
+    ═════════════════════════════════════════════════════════════ -->
+    <ng-container *ngIf="vistaActual === 'dashboard'">
+
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Dashboard</h2>
+          <p class="page-subtitle">Resumen general de tu actividad</p>
+        </div>
+        <button class="btn btn-primary" (click)="openModal(); cambiarVista('noticias')">
+          + Nueva Noticia
+        </button>
+      </div>
+
+      <!-- Stat cards -->
+      <div class="stats-grid">
+        <div class="stat-card stat-blue" (click)="cambiarVista('noticias')">
+          <div class="stat-icon"><i class="ti ti-news"></i></div>
+          <div class="stat-body">
+            <div class="stat-number">{{ borradores.length + publicadas.length }}</div>
+            <div class="stat-label">Total noticias</div>
+          </div>
+        </div>
+        <div class="stat-card stat-green" (click)="cambiarVista('noticias')">
+          <div class="stat-icon"><i class="ti ti-circle-check"></i></div>
+          <div class="stat-body">
+            <div class="stat-number">{{ publicadas.length }}</div>
+            <div class="stat-label">Publicadas</div>
+          </div>
+        </div>
+        <div class="stat-card stat-amber" (click)="cambiarVista('noticias')">
+          <div class="stat-icon"><i class="ti ti-clock"></i></div>
+          <div class="stat-body">
+            <div class="stat-number">{{ borradores.length }}</div>
+            <div class="stat-label">Borradores</div>
+          </div>
+        </div>
+        <div class="stat-card stat-cyan" (click)="cambiarVista('estudiantes')">
+          <div class="stat-icon"><i class="ti ti-users"></i></div>
+          <div class="stat-body">
+            <div class="stat-number">{{ estudiantes.length }}</div>
+            <div class="stat-label">Usuarios</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Noticias recientes -->
+      <div class="section-card">
+        <div class="section-card-header">
+          <span class="section-card-title">Noticias recientes</span>
+          <button class="btn btn-link-nav" (click)="cambiarVista('noticias')">Ver todas</button>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width:60px">Imagen</th>
+                <th>Título</th>
+                <th>Categoría</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+                <th class="text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let n of noticiasDashboard">
+                <td>
+                  <div class="tabla-thumb" *ngIf="n.imagen">
+                    <img [src]="n.imagen" [alt]="n.titulo">
+                  </div>
+                  <div class="tabla-thumb-empty" *ngIf="!n.imagen">
+                    <i class="ti ti-photo"></i>
+                  </div>
+                </td>
+                <td>
+                  <span class="tabla-titulo" (click)="openModal(n); cambiarVista('noticias')">{{ n.titulo }}</span>
+                </td>
+                <td>
+                  <span class="badge badge-section">{{ getSeccionNombre(n.seccionId) }}</span>
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="{
+                    'badge-borrador':  n.estado === 'BORRADOR',
+                    'badge-publicado': n.estado === 'PUBLICADO'
+                  }">{{ n.estado }}</span>
+                </td>
+                <td class="text-muted-sm">{{ formatDate(n.fechaPublicacion) }}</td>
+                <td class="text-center">
+                  <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-primary" (click)="openModal(n); cambiarVista('noticias')">Editar</button>
+                    <button class="btn btn-outline-danger"  (click)="deleteNoticia(n.id!)">Eliminar</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="noticiasDashboard.length === 0">
+                <td colspan="6" class="empty-state">
+                  <i class="ti ti-news"></i>
+                  <p>No hay noticias aún</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </ng-container>
+
+    <!-- ════════════════════════════════════════════════════════════
+         VISTA: NOTICIAS
+    ═════════════════════════════════════════════════════════════ -->
+    <ng-container *ngIf="vistaActual === 'noticias'">
+
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Noticias</h2>
+          <p class="page-subtitle">Las urgentes se publican directamente. Las normales esperan autorización del Director.</p>
+        </div>
+        <button class="btn btn-primary" (click)="openModal()">+ Nueva Noticia</button>
+      </div>
+
+      <!-- Stats mini -->
+      <div class="stats-grid stats-grid-3">
+        <div class="stat-card stat-blue">
+          <div class="stat-icon"><i class="ti ti-news"></i></div>
+          <div class="stat-body">
+            <div class="stat-number">{{ borradores.length + publicadas.length }}</div>
+            <div class="stat-label">Total</div>
+          </div>
+        </div>
+        <div class="stat-card stat-amber">
+          <div class="stat-icon"><i class="ti ti-clock"></i></div>
+          <div class="stat-body">
+            <div class="stat-number">{{ borradores.length }}</div>
+            <div class="stat-label">Pendientes</div>
+          </div>
+        </div>
+        <div class="stat-card stat-green">
+          <div class="stat-icon"><i class="ti ti-circle-check"></i></div>
+          <div class="stat-body">
+            <div class="stat-number">{{ publicadas.length }}</div>
+            <div class="stat-label">Publicadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pendientes -->
+      <div *ngIf="borradores.length > 0" class="mb-4">
+        <div class="subsection-label subsection-amber">
+          <i class="ti ti-clock"></i>
+          Pendiente de autorización ({{ borradores.length }} artículo{{ borradores.length !== 1 ? 's' : '' }})
+        </div>
+        <div class="row g-3">
+          <div *ngFor="let n of borradores" class="col-12 col-md-6 col-lg-4">
+            <div class="news-card news-card-pending">
+              <div class="news-card-img" *ngIf="n.imagen">
+                <img [src]="n.imagen" [alt]="n.titulo">
+              </div>
+              <div class="card-body pb-2">
+                <div class="d-flex flex-wrap gap-1 mb-2">
+                  <span class="badge badge-section">{{ getSeccionNombre(n.seccionId) }}</span>
+                  <span class="badge badge-urgente" *ngIf="n.prioridad==='URGENTE'">URGENTE</span>
+                  <span class="badge badge-destacada" *ngIf="n.prioridad==='DESTACADA'">DESTACADA</span>
+                </div>
+                <h6 class="card-title">{{ n.titulo }}</h6>
+                <p class="card-text small">{{ n.descripcion }}</p>
+                <p class="text-muted-sm mb-0">{{ formatDate(n.fechaPublicacion) }}</p>
+              </div>
+              <div class="card-footer bg-transparent">
+                <div class="btn-group w-100 btn-group-sm">
+                  <button class="btn btn-outline-primary" (click)="openModal(n)">Editar</button>
+                  <button class="btn btn-outline-danger"  (click)="deleteNoticia(n.id!)">Eliminar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Publicadas -->
+      <div class="mb-5">
+        <div class="subsection-label subsection-green">
+          <i class="ti ti-circle-check"></i>
+          Publicadas ({{ publicadas.length }} artículo{{ publicadas.length !== 1 ? 's' : '' }})
+        </div>
+        <div class="row g-3">
+          <div *ngFor="let n of publicadas" class="col-12 col-md-6 col-lg-4">
+            <div class="news-card" [class.news-card-urgent]="n.prioridad==='URGENTE'">
+              <div class="news-card-img" *ngIf="n.imagen">
+                <img [src]="n.imagen" [alt]="n.titulo">
+              </div>
+              <div class="card-body pb-2">
+                <div class="d-flex flex-wrap gap-1 mb-2">
+                  <span class="badge badge-urgente"   *ngIf="n.prioridad==='URGENTE'">URGENTE</span>
+                  <span class="badge badge-section">{{ getSeccionNombre(n.seccionId) }}</span>
+                  <span class="badge badge-destacada" *ngIf="n.prioridad==='DESTACADA'">DESTACADA</span>
+                  <span class="badge badge-publicado">PUBLICADA</span>
+                </div>
+                <h6 class="card-title">{{ n.titulo }}</h6>
+                <p class="text-muted-sm mb-0">{{ formatDate(n.fechaPublicacion) }}</p>
+              </div>
+              <div class="card-footer bg-transparent">
+                <div class="btn-group w-100 btn-group-sm">
+                  <button class="btn btn-outline-primary"   (click)="openModal(n)">Editar</button>
+                  <button class="btn btn-outline-secondary" (click)="verLectores(n)">Lectores</button>
+                  <button class="btn btn-outline-danger"    (click)="deleteNoticia(n.id!)">Eliminar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p *ngIf="publicadas.length === 0" class="empty-state-inline">No hay noticias publicadas aún</p>
+      </div>
+
+    </ng-container>
+
+    <!-- ════════════════════════════════════════════════════════════
+         VISTA: USUARIOS (ESTUDIANTES)
+    ═════════════════════════════════════════════════════════════ -->
+    <ng-container *ngIf="vistaActual === 'estudiantes'">
+
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Usuarios</h2>
+          <p class="page-subtitle">Gestiona las cuentas de los estudiantes de tu edificio asignado.</p>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+          <label class="text-muted small fw-semibold mb-0">Filtrar:</label>
+          <select class="form-select form-select-sm" style="width:auto;"
+                  [(ngModel)]="filtroEstadoEstudiantes"
+                  (ngModelChange)="filtrarEstudiantes()">
+            <option value="TODOS">Todos</option>
+            <option value="PENDIENTE">Pendientes</option>
+            <option value="ACTIVO">Activos</option>
+            <option value="INACTIVO">Inactivos</option>
+          </select>
+        </div>
+      </div>
+
+      <div *ngIf="cargandoEstudiantes" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="text-muted mt-2" style="font-size:13px;">Cargando estudiantes...</p>
+      </div>
+
+      <div *ngIf="!cargandoEstudiantes" class="section-card p-0">
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th class="ps-3">Estudiante</th>
+                <th>Email</th>
+                <th>Habitación</th>
+                <th>Edificio</th>
+                <th class="text-center">Estado</th>
+                <th class="text-center pe-3">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let est of estudiantesFiltrados">
+                <td class="ps-3">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="avatar avatar-blue">{{ est.nombre.charAt(0).toUpperCase() }}</div>
+                    <div>
+                      <div class="fw-semibold" style="font-size:12.5px;">{{ est.nombre }} {{ est.apellidos }}</div>
+                      <div class="text-muted-sm">{{ est.email }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="text-muted-sm">{{ est.email }}</td>
+                <td style="font-size:12px;">
+                  <span *ngIf="est.habitacionNumero">Hab. {{ est.habitacionNumero }}</span>
+                  <span *ngIf="!est.habitacionNumero" class="text-muted">—</span>
+                </td>
+                <td style="font-size:12px;">
+                  <span *ngIf="est.edificioNombre">{{ est.edificioNombre }}</span>
+                  <span *ngIf="!est.edificioNombre" class="text-muted">—</span>
+                </td>
+                <td class="text-center">
+                  <span class="badge"
+                        [ngClass]="{
+                          'badge-borrador':  est.estadoCuenta === 'PENDIENTE',
+                          'badge-publicado': est.estadoCuenta === 'ACTIVO',
+                          'badge-inactivo':  est.estadoCuenta === 'INACTIVO'
+                        }">
+                    {{ est.estadoCuenta === 'PENDIENTE' ? 'Pendiente'
+                     : est.estadoCuenta === 'ACTIVO'    ? 'Activo'
+                     :                                    'Inactivo' }}
+                  </span>
+                </td>
+                <td class="text-center pe-3">
+                  <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-primary"
+                            (click)="openUserModal(est)">Editar</button>
+                    <button class="btn btn-success"
+                            *ngIf="est.estadoCuenta !== 'ACTIVO'"
+                            (click)="cambiarEstadoEstudiante(est, 'ACTIVO')"
+                            [disabled]="est.cargando">
+                      <span *ngIf="!est.cargando">Activar</span>
+                      <span *ngIf="est.cargando" class="spinner-border spinner-border-sm"></span>
+                    </button>
+                    <button class="btn btn-outline-secondary"
+                            *ngIf="est.estadoCuenta === 'ACTIVO'"
+                            (click)="cambiarEstadoEstudiante(est, 'INACTIVO')"
+                            [disabled]="est.cargando">
+                      <span *ngIf="!est.cargando">Desactivar</span>
+                      <span *ngIf="est.cargando" class="spinner-border spinner-border-sm"></span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="estudiantesFiltrados.length === 0">
+                <td colspan="6" class="empty-state">
+                  <i class="ti ti-users"></i>
+                  <p>No hay estudiantes para mostrar</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span>{{ estudiantesFiltrados.length }} estudiante(s) mostrado(s)</span>
+          <span class="badge badge-borrador" *ngIf="pendientesCount > 0">
+            {{ pendientesCount }} pendiente(s) de activación
+          </span>
+        </div>
+      </div>
+
+    </ng-container>
+
+    <!-- ════════════════════════════════════════════════════════════
+         VISTA: SOLICITUDES
+    ═════════════════════════════════════════════════════════════ -->
+    <ng-container *ngIf="vistaActual === 'solicitudes'">
+
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">
+            Solicitudes de Registro
+            <span class="badge badge-urgente ms-2" *ngIf="solicitudesPendientesCount > 0">
+              {{ solicitudesPendientesCount }}
+            </span>
+          </h2>
+          <p class="page-subtitle">Revisa y gestiona las solicitudes de acceso enviadas por futuros residentes.</p>
+        </div>
+        <button class="btn btn-outline-secondary btn-sm" (click)="loadSolicitudes()">
+          Recargar
+        </button>
+      </div>
+
+      <div class="alert alert-success alert-dismissible" *ngIf="exitoSolicitudes">
+        {{ exitoSolicitudes }}<button class="btn-close" (click)="exitoSolicitudes=''"></button>
+      </div>
+      <div class="alert alert-danger alert-dismissible" *ngIf="errorSolicitudes">
+        {{ errorSolicitudes }}<button class="btn-close" (click)="errorSolicitudes=''"></button>
+      </div>
+
+      <div *ngIf="cargandoSolicitudes" class="text-center py-5">
+        <div class="spinner-border text-warning"></div>
+        <p class="text-muted mt-2" style="font-size:13px;">Cargando solicitudes...</p>
+      </div>
+
+      <div *ngIf="!cargandoSolicitudes" class="section-card section-card-danger p-0">
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th class="ps-3">Solicitante</th>
+                <th>Email</th>
+                <th>Facultad</th>
+                <th>Alojamiento</th>
+                <th>Mensaje</th>
+                <th class="text-center pe-3">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of solicitudes">
+                <td class="ps-3">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle flex-shrink-0 overflow-hidden" style="width:38px;height:38px;">
+                      <img *ngIf="s.foto" [src]="solicitudFotoUrl(s.foto)"
+                           style="width:100%;height:100%;object-fit:cover;" [alt]="s.nombre">
+                      <div *ngIf="!s.foto" class="avatar avatar-gold">
+                        {{ s.nombre.charAt(0).toUpperCase() }}
+                      </div>
+                    </div>
+                    <div>
+                      <div class="fw-semibold" style="font-size:12.5px;">{{ s.nombre }} {{ s.apellidos }}</div>
+                      <div class="text-muted-sm">
+                        {{ s.genero === 'M' ? 'Masculino' : s.genero === 'F' ? 'Femenino' : s.genero === 'NB' ? 'No binario' : '' }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td class="text-muted-sm">{{ s.email }}</td>
+                <td style="font-size:12px;">{{ s.facultad || '—' }}</td>
+                <td style="font-size:12px;">
+                  <span *ngIf="s.edificio || s.habitacion">
+                    {{ s.edificio }}<span *ngIf="s.habitacion"> — {{ s.habitacion }}</span>
+                  </span>
+                  <span *ngIf="!s.edificio && !s.habitacion" class="text-muted">—</span>
+                </td>
+                <td style="font-size:12px;">
+                  <span *ngIf="s.mensaje" class="text-muted tabla-mensaje-truncate" [title]="s.mensaje">
+                    {{ s.mensaje }}
+                  </span>
+                  <span *ngIf="!s.mensaje" class="text-muted">—</span>
+                </td>
+                <td class="text-center pe-3">
+                  <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-secondary" (click)="abrirSolicitudModal(s)">Ver</button>
+                    <button class="btn btn-success"
+                            (click)="aprobarSolicitud(s.id!, s.nombre)"
+                            [disabled]="isSolicitudCargando(s.id!)">
+                      <span *ngIf="!isSolicitudCargando(s.id!)">Aprobar</span>
+                      <span *ngIf="isSolicitudCargando(s.id!)" class="spinner-border spinner-border-sm"></span>
+                    </button>
+                    <button class="btn btn-outline-danger"
+                            (click)="rechazarSolicitud(s.id!, s.nombre)"
+                            [disabled]="isSolicitudCargando(s.id!)">
+                      <span *ngIf="!isSolicitudCargando(s.id!)">Rechazar</span>
+                      <span *ngIf="isSolicitudCargando(s.id!)" class="spinner-border spinner-border-sm"></span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="solicitudes.length === 0">
+                <td colspan="6" class="empty-state">
+                  <i class="ti ti-inbox"></i>
+                  <p>No hay solicitudes pendientes</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          {{ solicitudes.length }} solicitud(es) pendiente(s)
+        </div>
+      </div>
+
+    </ng-container>
+
+  </main>
+</div><!-- /page-layout -->
+
+
+<!-- ═══ MODAL NOTICIA ════════════════════════════════════════════ -->
+<div class="modal fade show d-block" *ngIf="showModal"
+     style="background:rgba(0,0,0,.5);" (click)="closeModal()">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
+       (click)="$event.stopPropagation()">
+    <div class="modal-content shadow">
+
+      <div class="modal-header">
+        <div class="d-flex align-items-center gap-3">
+          <img src="assets/images/AAUCA.png" alt="AAUCA"
+               style="width:42px;height:42px;border-radius:50%;
+                      border:2px solid var(--gold);object-fit:contain;
+                      background:#111;padding:2px;flex-shrink:0;">
+          <div>
+            <div class="modal-title">{{ editingNoticia ? 'Editar Noticia' : 'Nueva Noticia' }}</div>
+            <div class="modal-subtitle">AAUCA NEWS — Panel Celador</div>
+          </div>
+        </div>
+        <button class="btn-close ms-auto" (click)="closeModal()"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="mb-3">
+          <label class="form-label">Título *</label>
+          <input class="form-control" [class.is-invalid]="erroresNoticia['titulo']"
+                 [(ngModel)]="noticiaForm.titulo" placeholder="Título de la noticia">
+          <div class="invalid-feedback" *ngIf="erroresNoticia['titulo']">⚠️ {{ erroresNoticia['titulo'] }}</div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Descripción *</label>
+          <textarea class="form-control" [class.is-invalid]="erroresNoticia['descripcion']"
+                    [(ngModel)]="noticiaForm.descripcion" rows="4"></textarea>
+          <div class="invalid-feedback" *ngIf="erroresNoticia['descripcion']">⚠️ {{ erroresNoticia['descripcion'] }}</div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Sección *</label>
+          <select class="form-select" [class.is-invalid]="erroresNoticia['seccionId']"
+                  [(ngModel)]="noticiaForm.seccionId">
+            <option [ngValue]="undefined" disabled>Selecciona una sección</option>
+            <option *ngFor="let s of secciones" [ngValue]="s.id">{{ s.nombre }}</option>
+          </select>
+          <div class="invalid-feedback" *ngIf="erroresNoticia['seccionId']">⚠️ {{ erroresNoticia['seccionId'] }}</div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Prioridad</label>
+          <select class="form-select" [(ngModel)]="noticiaForm.prioridad">
+            <option value="NORMAL">Normal (requiere autorización del Director)</option>
+            <option value="URGENTE">Urgente (se publica directamente)</option>
+            <option value="DESTACADA">Destacada (requiere autorización)</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">¿A quién va dirigida? *</label>
+          <div class="row g-2">
+            <div class="col-md-6">
+              <select class="form-select" [(ngModel)]="tipoSeleccionado"
+                      (ngModelChange)="seleccionarTipo($event)">
+                <option *ngFor="let tipo of tipos" [ngValue]="tipo">
+                  {{ iconoPorNombre(tipo.nombre) }} {{ tipo.nombre | titlecase }}
+                </option>
+              </select>
+            </div>
+            <div class="col-md-6" *ngIf="tipoNecesitaValor">
+              <select class="form-select" [class.is-invalid]="erroresNoticia['destinatario']"
+                      [(ngModel)]="valorDestinatario"
+                      *ngIf="tipoSeleccionado?.nombre === 'GENERO'">
+                <option value="" disabled>Género...</option>
+                <option value="M">Masculino</option>
+                <option value="F">Femenino</option>
+                <option value="NB">No binario</option>
+              </select>
+              <select class="form-select" [class.is-invalid]="erroresNoticia['destinatario']"
+                      [(ngModel)]="valorDestinatario"
+                      *ngIf="tipoSeleccionado?.nombre === 'FACULTAD'">
+                <option value="" disabled>Facultad...</option>
+                <option *ngFor="let f of valoresFiltro.facultades" [value]="f">{{ f }}</option>
+              </select>
+              <select class="form-select" [class.is-invalid]="erroresNoticia['destinatario']"
+                      [(ngModel)]="valorDestinatario"
+                      *ngIf="tipoSeleccionado?.nombre === 'EDIFICIO'">
+                <option value="" disabled>Edificio...</option>
+                <option *ngFor="let e of edificios" [value]="e.id">{{ e.nombre }}</option>
+              </select>
+              <ng-container *ngIf="tipoSeleccionado?.nombre === 'HABITACION'">
+                <select class="form-select mb-2"
+                        [ngModel]="edificioSeleccionado"
+                        (ngModelChange)="onEdificioChange($event)">
+                  <option [ngValue]="null" disabled>1. Edificio...</option>
+                  <option *ngFor="let e of edificios" [ngValue]="e.id">{{ e.nombre }}</option>
+                </select>
+                <select class="form-select"
+                        [class.is-invalid]="erroresNoticia['destinatario']"
+                        [(ngModel)]="valorDestinatario"
+                        *ngIf="habitaciones.length > 0">
+                  <option value="" disabled>2. Habitación...</option>
+                  <optgroup *ngFor="let planta of plantasDelEdificio" [label]="'Planta ' + planta">
+                    <option *ngFor="let h of habitacionesPorPlanta(planta)" [value]="h.id">
+                      Hab. {{ h.numero }}
+                    </option>
+                  </optgroup>
+                </select>
+              </ng-container>
+              <select class="form-select" [class.is-invalid]="erroresNoticia['destinatario']"
+                      [(ngModel)]="valorDestinatario"
+                      *ngIf="tipoSeleccionado?.nombre === 'USUARIO_ESPECIFICO'">
+                <option value="" disabled>Usuario...</option>
+                <option *ngFor="let u of usuarios" [value]="u.id">{{ u.nombre }} {{ u.apellidos }}</option>
+              </select>
+              <div class="invalid-feedback d-block" *ngIf="erroresNoticia['destinatario']">
+                ⚠️ {{ erroresNoticia['destinatario'] }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Imagen</label>
+          <label class="img-upload-zone" (click)="$event.stopPropagation()">
+            <span class="btn btn-sm btn-outline-secondary pe-none">Seleccionar imagen</span>
+            <span class="text-muted small">{{ noticiaPreview ? 'Imagen cargada' : 'Ningún archivo seleccionado' }}</span>
+            <input type="file" accept="image/*"
+                   style="position:absolute;opacity:0;width:1px;height:1px;"
+                   (click)="$event.stopPropagation()"
+                   (change)="onFileSelected($event)">
+          </label>
+          <div *ngIf="noticiaPreview" class="mt-2" style="height:150px;border-radius:6px;overflow:hidden;">
+            <img [src]="noticiaPreview" style="width:100%;height:150px;object-fit:cover;">
+          </div>
+        </div>
+
+        <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+        <button class="btn btn-primary" (click)="saveNoticia()" [disabled]="isLoading">
+          {{ isLoading ? 'Guardando...' : (editingNoticia ? 'Actualizar' : 'Crear') }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL LECTORES ═══════════════════════════════════════════ -->
+<div class="modal fade show d-block" *ngIf="lectoresModal"
+     style="background:rgba(0,0,0,.5);" (click)="cerrarLectoresModal()">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
+       (click)="$event.stopPropagation()">
+    <div class="modal-content shadow">
+      <div class="modal-header">
+        <div class="d-flex align-items-center gap-3">
+          <img src="assets/images/AAUCA.png" alt="AAUCA"
+               style="width:42px;height:42px;border-radius:50%;border:2px solid var(--gold);
+                      object-fit:contain;background:#111;padding:2px;flex-shrink:0;">
+          <div>
+            <div class="modal-title">Lectores</div>
+            <div class="modal-subtitle">{{ noticiaSeleccionada?.titulo }}</div>
+          </div>
+        </div>
+        <button class="btn-close ms-auto" (click)="cerrarLectoresModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="loadingLecturas" class="text-center py-4">
+          <div class="spinner-border text-primary"></div>
+        </div>
+        <ng-container *ngIf="!loadingLecturas">
+          <p class="text-muted mb-3" style="font-size:13px;">
+            Total de lectores: <strong>{{ lecturasTotal }}</strong>
+          </p>
+          <div class="table-responsive" *ngIf="noticiaLecturas.length > 0">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th class="ps-3">Lector</th>
+                  <th>Email</th>
+                  <th>Fecha de lectura</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let l of noticiaLecturas">
+                  <td class="ps-3 fw-semibold" style="font-size:13px;">{{ $any(l).nombre }} {{ $any(l).apellidos }}</td>
+                  <td style="font-size:12px;" class="text-muted">{{ $any(l).email }}</td>
+                  <td style="font-size:12px;">{{ formatDateTime($any(l).fechaLectura) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div *ngIf="noticiaLecturas.length === 0" class="empty-state">
+            <i class="ti ti-eye-off"></i>
+            <p>Nadie ha leído esta noticia todavía.</p>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mt-3"
+               *ngIf="lecturasTotalPaginas > 1">
+            <button class="btn btn-sm btn-outline-secondary"
+                    [disabled]="lecturasPagina === 0"
+                    (click)="lecturasPaginaAnterior()">← Anterior</button>
+            <span class="text-muted small">Página {{ lecturasPagina + 1 }} de {{ lecturasTotalPaginas }}</span>
+            <button class="btn btn-sm btn-outline-secondary"
+                    [disabled]="lecturasPagina >= lecturasTotalPaginas - 1"
+                    (click)="lecturasPaginaSiguiente()">Siguiente →</button>
+          </div>
+        </ng-container>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="cerrarLectoresModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL USUARIO (editar estudiante) ════════════════════════ -->
+<div class="modal fade show d-block" *ngIf="showUserModal"
+     style="background:rgba(0,0,0,.5);" (click)="closeUserModal()">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
+       (click)="$event.stopPropagation()">
+    <div class="modal-content shadow">
+      <div class="modal-header">
+        <div class="d-flex align-items-center gap-3">
+          <img src="assets/images/AAUCA.png" alt="AAUCA"
+               style="width:42px;height:42px;border-radius:50%;border:2px solid var(--gold);
+                      object-fit:contain;background:#111;padding:2px;flex-shrink:0;">
+          <div>
+            <div class="modal-title">Editar Estudiante</div>
+            <div class="modal-subtitle">AAUCA NEWS — Panel Celador</div>
+          </div>
+        </div>
+        <button class="btn-close ms-auto" (click)="closeUserModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Nombre *</label>
+            <input class="form-control" [class.is-invalid]="erroresUser['nombre']"
+                   [(ngModel)]="userForm.nombre" name="uNombre">
+            <div class="invalid-feedback" *ngIf="erroresUser['nombre']">⚠️ {{ erroresUser['nombre'] }}</div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Apellidos</label>
+            <input class="form-control" [(ngModel)]="userForm.apellidos" name="uApellidos">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Email *</label>
+          <input type="email" class="form-control" [class.is-invalid]="erroresUser['email']"
+                 [(ngModel)]="userForm.email" name="uEmail" placeholder="nombre@gmail.com">
+          <div class="invalid-feedback" *ngIf="erroresUser['email']">⚠️ {{ erroresUser['email'] }}</div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Edificio</label>
+            <select class="form-select" name="uEdificio"
+                    [ngModel]="edificioSeleccionadoUsuario"
+                    (ngModelChange)="onEdificioUsuarioChange($event)">
+              <option [ngValue]="null">—</option>
+              <option *ngFor="let e of edificios" [ngValue]="e.id">{{ e.nombre }}</option>
+            </select>
+          </div>
+          <div class="col-md-6 mb-3" *ngIf="habitacionesUsuario.length > 0">
+            <label class="form-label">Habitación</label>
+            <select class="form-select" [(ngModel)]="userForm.habitacionId" name="uHabitacion">
+              <option [ngValue]="null">—</option>
+              <optgroup *ngFor="let p of plantasUsuario" [label]="'Planta ' + p">
+                <option *ngFor="let h of habitacionesUsuarioPorPlanta(p)" [ngValue]="h.id">
+                  Habitación {{ h.numero }}
+                </option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="uActivo"
+                 [(ngModel)]="userForm.activo" name="uActivo">
+          <label class="form-check-label" for="uActivo">Cuenta activa</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeUserModal()">Cancelar</button>
+        <button class="btn btn-primary" (click)="saveUser()" [disabled]="isLoading">
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1"></span>
+          {{ isLoading ? 'Guardando...' : 'Guardar cambios' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL SOLICITUD (ver detalle) ═════════════════════════════ -->
+<div class="modal fade show d-block" *ngIf="showSolicitudModal"
+     style="background:rgba(0,0,0,.5);" (click)="cerrarSolicitudModal()">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
+       (click)="$event.stopPropagation()">
+    <div class="modal-content shadow">
+      <div class="modal-header">
+        <div class="d-flex align-items-center gap-3">
+          <img src="assets/images/AAUCA.png" alt="AAUCA"
+               style="width:42px;height:42px;border-radius:50%;border:2px solid var(--gold);
+                      object-fit:contain;background:#111;padding:2px;flex-shrink:0;">
+          <div>
+            <div class="modal-title">Detalle de Solicitud</div>
+            <div class="modal-subtitle">AAUCA NEWS — Panel Celador</div>
+          </div>
+        </div>
+        <button class="btn-close ms-auto" (click)="cerrarSolicitudModal()"></button>
+      </div>
+      <div class="modal-body" *ngIf="solicitudSeleccionada as s">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="rounded-circle flex-shrink-0 overflow-hidden" style="width:56px;height:56px;">
+            <img *ngIf="s.foto" [src]="solicitudFotoUrl(s.foto)"
+                 style="width:100%;height:100%;object-fit:cover;" [alt]="s.nombre">
+            <div *ngIf="!s.foto" class="avatar avatar-gold" style="width:56px;height:56px;font-size:20px;">
+              {{ s.nombre.charAt(0).toUpperCase() }}
+            </div>
+          </div>
+          <div>
+            <div class="fw-bold fs-5">{{ s.nombre }} {{ s.apellidos }}</div>
+            <div class="text-muted small">{{ s.email }}</div>
+          </div>
+        </div>
+        <table class="table table-sm table-borderless mb-0">
+          <tbody>
+            <tr>
+              <th class="text-muted" style="width:140px;">Género</th>
+              <td>{{ s.genero === 'M' ? 'Masculino' : s.genero === 'F' ? 'Femenino' : s.genero === 'NB' ? 'No binario' : '—' }}</td>
+            </tr>
+            <tr><th class="text-muted">Facultad</th><td>{{ s.facultad || '—' }}</td></tr>
+            <tr><th class="text-muted">Edificio</th><td>{{ s.edificio || '—' }}</td></tr>
+            <tr><th class="text-muted">Habitación</th><td>{{ s.habitacion || '—' }}</td></tr>
+            <tr><th class="text-muted align-top">Mensaje</th><td style="white-space:pre-wrap;">{{ s.mensaje || '—' }}</td></tr>
+            <tr><th class="text-muted">Estado</th><td><span class="badge badge-borrador">{{ s.estado }}</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer" *ngIf="solicitudSeleccionada as s">
+        <button class="btn btn-secondary" (click)="cerrarSolicitudModal()">Cerrar</button>
+        <button class="btn btn-outline-danger"
+                (click)="rechazarSolicitud(s.id!, s.nombre)"
+                [disabled]="isSolicitudCargando(s.id!)">
+          <span *ngIf="!isSolicitudCargando(s.id!)">Rechazar</span>
+          <span *ngIf="isSolicitudCargando(s.id!)" class="spinner-border spinner-border-sm"></span>
+        </button>
+        <button class="btn btn-success"
+                (click)="aprobarSolicitud(s.id!, s.nombre)"
+                [disabled]="isSolicitudCargando(s.id!)">
+          <span *ngIf="!isSolicitudCargando(s.id!)">Aprobar</span>
+          <span *ngIf="isSolicitudCargando(s.id!)" class="spinner-border spinner-border-sm"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Spinner pantalla completa -->
+<div *ngIf="isLoading"
+     class="position-fixed top-0 start-0 w-100 h-100 d-flex
+            justify-content-center align-items-center"
+     style="background:rgba(0,0,0,.45);z-index:9999;">
+  <div class="spinner-border text-warning" style="width:3rem;height:3rem;"></div>
+</div>

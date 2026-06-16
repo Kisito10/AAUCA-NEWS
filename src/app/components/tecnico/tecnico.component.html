@@ -1,0 +1,293 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark py-3 sticky-top">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand fw-bold fs-4">
+      <span class="text-warning">AAUCA</span><span class="text-white">NEWS</span>
+    </a>
+    <div class="ms-auto d-flex align-items-center gap-3">
+      <span class="text-white small d-none d-md-inline">{{ horaActual }}</span>
+      <span class="text-white fw-semibold small">PANEL TÉCNICO</span>
+      <button class="btn p-0 border-0 bg-transparent d-flex align-items-center gap-2"
+              (click)="mostrarPerfil = true" title="Editar mi perfil">
+        <img *ngIf="currentUser?.foto"
+             [src]="fotoUrl(currentUser?.foto)"
+             class="rounded-circle"
+             style="width:34px;height:34px;object-fit:cover;border:2px solid #17a2b8;">
+        <div *ngIf="!currentUser?.foto"
+             class="rounded-circle d-flex align-items-center justify-content-center"
+             style="width:34px;height:34px;background:#17a2b8;border:2px solid #fff;
+                    font-weight:bold;color:#fff;font-size:14px;">
+          {{ currentUser?.nombre?.charAt(0)?.toUpperCase() }}
+        </div>
+        <span class="badge bg-info text-dark">{{ currentUser?.nombre }}</span>
+      </button>
+      <button class="btn btn-outline-danger btn-sm" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </div>
+</nav>
+
+<app-perfil *ngIf="mostrarPerfil"
+            (cerrar)="mostrarPerfil = false; recargarUsuario()"
+            (perfilActualizado)="onPerfilActualizado($event)">
+</app-perfil>
+
+<!-- El resto del HTML del técnico queda exactamente igual desde aquí -->
+<div class="container-fluid py-4 px-4">
+
+  <div class="alert alert-success alert-dismissible" *ngIf="success">
+    {{ success }}<button class="btn-close" (click)="success=''"></button>
+  </div>
+  <div class="alert alert-danger alert-dismissible" *ngIf="error">
+    {{ error }}<button class="btn-close" (click)="error=''"></button>
+  </div>
+
+  <div class="mb-4">
+    <h3 class="fw-bold mb-1">🔧 Panel del Técnico</h3>
+    <p class="text-muted mb-0">Administración y mantenimiento del sistema AAUCA NEWS</p>
+  </div>
+
+  <ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab==='backups'" (click)="activeTab='backups'">💾 Backups</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab==='sistema'" (click)="activeTab='sistema'">📊 Estado del sistema</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab==='logs'" (click)="activeTab='logs'">📋 Logs</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab==='cuentas'" (click)="activeTab='cuentas'">
+        🔒 Cuentas bloqueadas
+        <span class="badge bg-danger ms-1" *ngIf="cuentasBloqueadas.length > 0">{{ cuentasBloqueadas.length }}</span>
+      </button>
+    </li>
+  </ul>
+
+  <div *ngIf="activeTab==='backups'">
+    <div class="row g-4 mb-4">
+      <div class="col-md-4">
+        <div class="card shadow-sm h-100 border-0 border-top border-primary border-3">
+          <div class="card-body text-center p-4">
+            <div class="mb-3" style="font-size:3rem;">🗄️</div>
+            <h5 class="fw-bold">Base de datos</h5>
+            <p class="text-muted small mb-4">Exporta todas las tablas de <code>residencia_noticias</code> en formato SQL.</p>
+            <button class="btn btn-primary w-100" (click)="realizarBackupBD()" [disabled]="realizandoBackup">
+              <span *ngIf="realizandoBackup" class="spinner-border spinner-border-sm me-2"></span>
+              {{ realizandoBackup ? 'Procesando...' : '💾 Backup BD' }}
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card shadow-sm h-100 border-0 border-top border-info border-3">
+          <div class="card-body text-center p-4">
+            <div class="mb-3" style="font-size:3rem;">🖼️</div>
+            <h5 class="fw-bold">Archivos e imágenes</h5>
+            <p class="text-muted small mb-4">Copia todos los archivos subidos al servidor, incluyendo imágenes de noticias.</p>
+            <button class="btn btn-info w-100 text-white" (click)="realizarBackupArchivos()" [disabled]="realizandoBackup">
+              <span *ngIf="realizandoBackup" class="spinner-border spinner-border-sm me-2"></span>
+              {{ realizandoBackup ? 'Procesando...' : '🖼️ Backup archivos' }}
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card shadow-sm h-100 border-0 border-top border-warning border-3">
+          <div class="card-body text-center p-4">
+            <div class="mb-3" style="font-size:3rem;">💾</div>
+            <h5 class="fw-bold">Backup completo</h5>
+            <p class="text-muted small mb-4">Copia completa del sistema: base de datos, archivos y configuración.</p>
+            <button class="btn btn-warning w-100 text-dark fw-semibold" (click)="realizarBackupCompleto()" [disabled]="realizandoBackup">
+              <span *ngIf="realizandoBackup" class="spinner-border spinner-border-sm me-2"></span>
+              {{ realizandoBackup ? 'Procesando...' : '🗃️ Backup completo' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+        <h5 class="mb-0 fw-semibold">📋 Historial de backups</h5>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-light btn-sm" (click)="exportarHistorial()" *ngIf="historialBackups.length > 0">📥 Exportar CSV</button>
+          <button class="btn btn-outline-danger btn-sm" (click)="limpiarHistorial()" *ngIf="historialBackups.length > 0">🗑 Limpiar</button>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="text-dark">Fecha y hora</th>
+                <th class="text-dark">Tipo</th>
+                <th class="text-dark">Estado</th>
+                <th class="text-dark">Tamaño</th>
+                <th class="text-dark">Duración</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let b of historialBackups">
+                <td class="small text-muted">{{ b.fecha }}</td>
+                <td class="fw-semibold small">{{ b.tipo }}</td>
+                <td class="small">{{ b.estado }}</td>
+                <td class="small text-muted">{{ b.tamanio }}</td>
+                <td class="small text-muted">{{ b.duracion }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div *ngIf="historialBackups.length === 0" class="text-center text-muted py-5">
+          <div style="font-size:2.5rem;">📭</div>
+          <p class="mt-2">No hay backups registrados aún.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="activeTab==='sistema'">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-semibold mb-0">Estado actual del sistema</h5>
+      <button class="btn btn-outline-secondary btn-sm" (click)="refrescarEstadisticas()">🔄 Refrescar</button>
+    </div>
+    <div *ngIf="cargandoStats" class="text-center py-5">
+      <div class="spinner-border text-primary mb-3"></div>
+      <p class="text-muted">Cargando estadísticas...</p>
+    </div>
+    <div class="row g-3" *ngIf="!cargandoStats">
+      <div *ngFor="let e of estadisticas" class="col-6 col-md-3">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-body text-center p-3">
+            <div class="fs-2 mb-2">{{ e.icono }}</div>
+            <div class="fw-bold fs-5 mb-1"
+                 [class.text-success]="e.color==='success'"
+                 [class.text-warning]="e.color==='warning'"
+                 [class.text-info]="e.color==='info'"
+                 [class.text-primary]="e.color==='primary'"
+                 [class.text-danger]="e.color==='danger'">{{ e.valor }}</div>
+            <div class="text-muted small">{{ e.label }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card shadow-sm border-0 mt-4">
+      <div class="card-header bg-dark text-white py-3">
+        <h5 class="mb-0 fw-semibold">🖥️ Microservicios</h5>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="text-dark">Servicio</th>
+              <th class="text-dark">Puerto</th>
+              <th class="text-dark">Estado</th>
+              <th class="text-dark">Última actividad</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="fw-semibold">🔐 Microservicio Users</td><td class="small text-muted">9090</td><td><span class="badge bg-success">Activo</span></td><td class="small text-muted">Hace unos segundos</td></tr>
+            <tr><td class="fw-semibold">📰 Microservicio Noticias</td><td class="small text-muted">9092</td><td><span class="badge bg-success">Activo</span></td><td class="small text-muted">Hace unos segundos</td></tr>
+            <tr><td class="fw-semibold">🗂️ Microservicio Secciones</td><td class="small text-muted">9091</td><td><span class="badge bg-success">Activo</span></td><td class="small text-muted">Hace unos segundos</td></tr>
+            <tr><td class="fw-semibold">⚙️ Config Server</td><td class="small text-muted">8888</td><td><span class="badge bg-success">Activo</span></td><td class="small text-muted">Hace unos segundos</td></tr>
+            <tr><td class="fw-semibold">🔍 Eureka Server</td><td class="small text-muted">8761</td><td><span class="badge bg-success">Activo</span></td><td class="small text-muted">Hace unos segundos</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="activeTab==='logs'">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <h5 class="fw-semibold mb-0">Registro de actividad del sistema</h5>
+      <div class="d-flex gap-2 align-items-center">
+        <select class="form-select form-select-sm" [(ngModel)]="filtroLog" style="width:auto;">
+          <option value="todos">Todos los niveles</option>
+          <option value="INFO">INFO</option>
+          <option value="WARN">WARN</option>
+          <option value="ERROR">ERROR</option>
+        </select>
+        <button class="btn btn-outline-secondary btn-sm" (click)="refrescarLogs()">🔄 Refrescar</button>
+      </div>
+    </div>
+    <div *ngIf="cargandoLogs" class="text-center py-5">
+      <div class="spinner-border text-primary mb-3"></div>
+      <p class="text-muted">Cargando logs...</p>
+    </div>
+    <div class="card shadow-sm border-0" *ngIf="!cargandoLogs">
+      <div class="card-body p-0">
+        <div class="table-responsive" style="max-height:500px;overflow-y:auto;">
+          <table class="table table-hover align-middle mb-0 table-sm">
+            <thead class="table-dark sticky-top">
+              <tr>
+                <th style="width:100px">Hora</th>
+                <th style="width:80px">Nivel</th>
+                <th>Mensaje</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let log of logsFiltrados">
+                <td class="small text-muted text-nowrap">{{ log.hora }}</td>
+                <td><span class="badge" [class]="badgeLog(log.nivel)">{{ log.nivel }}</span></td>
+                <td class="small">{{ log.mensaje }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div *ngIf="logsFiltrados.length === 0" class="text-center text-muted py-4">No hay logs con el filtro seleccionado.</div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="activeTab==='cuentas'">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-semibold mb-0">Cuentas bloqueadas por intentos fallidos</h5>
+    </div>
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="text-dark">Usuario</th>
+                <th class="text-dark">Email</th>
+                <th class="text-dark">Intentos</th>
+                <th class="text-dark">Bloqueada hasta</th>
+                <th class="text-dark text-center">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of cuentasBloqueadas">
+                <td class="fw-semibold">{{ c.nombre }}</td>
+                <td class="small">{{ c.email }}</td>
+                <td><span class="badge bg-danger">{{ c.intentos }} intentos</span></td>
+                <td class="small text-muted">{{ c.bloqueadaHasta }}</td>
+                <td class="text-center">
+                  <button class="btn btn-success btn-sm" (click)="desbloquearCuenta(c.id, c.nombre)" [disabled]="desbloqueando">
+                    🔓 Desbloquear
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div *ngIf="cuentasBloqueadas.length === 0" class="text-center text-muted py-5">
+          <div style="font-size:2.5rem;">✅</div>
+          <p class="mt-2 fw-semibold">No hay cuentas bloqueadas</p>
+          <small>Todas las cuentas están activas y accesibles.</small>
+        </div>
+      </div>
+    </div>
+    <div class="alert alert-info mt-3 small">
+      ℹ️ Las cuentas se bloquean automáticamente tras 5 intentos fallidos de inicio de sesión.
+    </div>
+  </div>
+
+</div>
+
+<div *ngIf="realizandoBackup"
+     class="position-fixed top-0 start-0 w-100 h-100 d-flex flex-column
+            justify-content-center align-items-center"
+     style="background:rgba(0,0,0,.6); z-index:9999;">
+  <div class="spinner-border text-warning mb-3" style="width:3rem;height:3rem;"></div>
+  <p class="text-white fw-semibold fs-5">Realizando backup...</p>
+  <p class="text-white-50 small">Por favor no cierres esta ventana</p>
+</div>

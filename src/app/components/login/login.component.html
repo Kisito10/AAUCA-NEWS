@@ -1,0 +1,116 @@
+<div class="lc-root">
+
+  <!-- ── Navbar amarillo ── -->
+  <nav class="lc-nav">
+    <a class="lc-nav__brand" routerLink="/">
+      <img src="assets/images/AAUCA.png" alt="AAUCA" class="lc-nav__logo"/>
+      <span class="lc-nav__name">
+        <span class="lc-nav__name-gold">AAUCA</span><span class="lc-nav__name-white">NEWS</span>
+      </span>
+    </a>
+    <a class="lc-nav__back" routerLink="/">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.5">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+      Volver al inicio
+    </a>
+  </nav>
+
+  <div class="lc-card">
+
+    <!-- ── Panel izquierdo (imagen) ── -->
+    <div class="lc-side">
+      <img class="lc-side__photo"
+           src="assets/images/fas.png"
+           alt="Residencia Universitaria AAUCA"/>
+    </div>
+
+    <!-- ── Panel derecho (formulario) ── -->
+    <div class="lc-panel">
+
+      <h1 class="lc-title">Login</h1>
+      <p class="lc-subtitle">Enter your username and password to log in</p>
+
+      <div class="lc-error" *ngIf="errorMessage">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8"  x2="12"    y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        {{ errorMessage }}
+      </div>
+
+      <form (ngSubmit)="login()" autocomplete="off" class="lc-form">
+
+        <div class="lc-field">
+          <label class="lc-field__label" for="lc-email">Username</label>
+          <input class="lc-field__input"
+                 id="lc-email"
+                 type="email"
+                 name="email"
+                 [(ngModel)]="email"
+                 placeholder="Enter Username"
+                 [disabled]="isLoading"
+                 autocomplete="email"
+                 required/>
+        </div>
+
+        <div class="lc-field">
+          <label class="lc-field__label" for="lc-pwd">Password</label>
+          <div class="lc-field__wrap">
+            <input class="lc-field__input lc-field__input--pw"
+                   id="lc-pwd"
+                   [type]="showPw ? 'text' : 'password'"
+                   name="password"
+                   [(ngModel)]="password"
+                   placeholder="Enter Password"
+                   [disabled]="isLoading"
+                   autocomplete="current-password"
+                   required/>
+            <button type="button"
+                    class="lc-field__eye"
+                    (click)="showPw = !showPw"
+                    [title]="showPw ? 'Hide password' : 'Show password'">
+              <svg *ngIf="!showPw" width="17" height="17" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8
+                         a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0
+                         1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19
+                         m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+              <svg *ngIf="showPw" width="17" height="17" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="lc-forgot">
+          <button class="lc-link" type="button"
+                  (click)="errorMessage = 'Contacta al Director para recuperar tu contraseña.'">
+            Forgot Password?
+          </button>
+        </div>
+
+        <button type="submit" class="lc-btn" [disabled]="isLoading">
+          <span *ngIf="isLoading" class="lc-spinner"></span>
+          {{ isLoading ? 'Verificando…' : 'LOGIN' }}
+        </button>
+
+        <p class="lc-register">
+          ¿No tienes cuenta?
+          <a class="lc-register__link" [routerLink]="['/']" [queryParams]="{ solicitud: 1 }">
+            Solicitar acceso →
+          </a>
+        </p>
+
+      </form>
+    </div>
+  </div>
+
+</div>

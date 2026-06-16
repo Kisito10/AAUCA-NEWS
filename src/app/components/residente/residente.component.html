@@ -1,0 +1,256 @@
+<!-- ═══ NAVBAR ════════════════════════════════════════════════════════════════ -->
+<nav class="navbar navbar-premium sticky-top d-flex align-items-center">
+  <div class="container-fluid">
+    <a class="navbar-brand d-flex align-items-start flex-column" routerLink="/">
+      <span class="navbar-brand-text">AAUCA<span>NEWS</span></span>
+      <span class="navbar-brand-sub">Comunicación institucional</span>
+    </a>
+
+    <div class="d-flex align-items-center gap-3 ms-auto">
+      <a class="nav-link-custom d-none d-md-block" routerLink="/landing">Inicio</a>
+
+      <!-- Avatar -->
+      <div class="navbar-avatar" (click)="mostrarPerfil = true">
+        <img *ngIf="currentUser?.foto"
+             [src]="fotoUrl(currentUser?.foto)"
+             [alt]="currentUser?.nombre">
+        <div *ngIf="!currentUser?.foto" class="avatar-initials">
+          {{ currentUser?.nombre?.charAt(0)?.toUpperCase() }}
+        </div>
+        <span class="avatar-name d-none d-md-block">{{ currentUser?.nombre }}</span>
+      </div>
+
+      <button class="btn-logout-premium" (click)="logout()">Salir</button>
+    </div>
+  </div>
+</nav>
+
+<app-perfil *ngIf="mostrarPerfil"
+            (cerrar)="mostrarPerfil = false; recargarUsuario()"
+            (perfilActualizado)="onPerfilActualizado($event)">
+</app-perfil>
+
+<div class="residente-container">
+
+  <!-- ALERT -->
+  <div class="container-fluid px-4 pt-3" *ngIf="errorMessage">
+    <div class="alert-premium">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      {{ errorMessage }}
+      <button class="btn-close btn-close-white ms-auto" style="font-size:10px;" (click)="errorMessage=''"></button>
+    </div>
+  </div>
+
+  <!-- ═══ CINTA URGENTES — última hora que se desplaza ════════════════════ -->
+  <div class="urgent-ticker" *ngIf="noticiasUrgentes.length > 0" role="region" aria-label="Noticias urgentes">
+    <div class="urgent-ticker-label">
+      <span class="urgent-pulse"></span> Urgente
+    </div>
+    <div class="urgent-ticker-viewport">
+      <div class="urgent-ticker-track"
+           [style.animation-duration]="(noticiasUrgentes.length * 6 + 6) + 's'">
+        <a *ngFor="let noticia of noticiasUrgentes"
+           class="urgent-ticker-item" (click)="openNoticiaDetail(noticia)">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          {{ noticia.titulo }}
+          <span class="urgent-ticker-sep">•</span>
+        </a>
+        <a *ngFor="let noticia of noticiasUrgentes"
+           class="urgent-ticker-item" aria-hidden="true" (click)="openNoticiaDetail(noticia)">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          {{ noticia.titulo }}
+          <span class="urgent-ticker-sep">•</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ HERO ══════════════════════════════════════════════════════════════ -->
+  <div class="hero-panel">
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-2">
+      <div>
+        <div class="hero-eyebrow">Panel del residente</div>
+        <div class="hero-title">Hola, {{ (currentUser?.nombre || 'Residente').split(' ')[0] }} 👋</div>
+        <div class="hero-sub">
+          <i class="bi bi-building"></i>
+          {{ currentUser?.habitacion?.edificioId ? 'Edificio ' + currentUser?.habitacion?.edificioId : 'Residencia AAUCA' }}
+          <span *ngIf="currentUser?.habitacion?.numero">&middot; Hab. {{ currentUser?.habitacion?.numero }}</span>
+        </div>
+      </div>
+      <div class="hero-date-block d-none d-md-block">
+        <div class="hero-date-day">{{ getFechaDia() }}</div>
+        <div class="hero-date-full">{{ getFechaCompleta() }}</div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-number">{{ noticiasFiltradas.length }}</div>
+        <div class="stat-label">Total</div>
+      </div>
+      <div class="stat-card danger">
+        <div class="stat-number red">{{ noticiasUrgentes.length }}</div>
+        <div class="stat-label">Urgentes</div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-number green">{{ noticiasNormales.length }}</div>
+        <div class="stat-label">Normales</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTENIDO PRINCIPAL ═══════════════════════════════════════════════ -->
+  <div class="main-content">
+
+    <!-- Buscador -->
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-md-8">
+        <div class="search-premium">
+          <i class="bi bi-search"></i>
+          <input placeholder="Buscar por título o descripción…"
+                 [(ngModel)]="searchTerm" (input)="filtrarNoticias()">
+          <button *ngIf="searchTerm" class="btn p-0 border-0 bg-transparent"
+                  (click)="limpiarBusqueda()">
+            <i class="bi bi-x-lg" style="font-size:13px;"></i>
+          </button>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <select class="select-premium" [(ngModel)]="seccionSeleccionada" (change)="filtrarNoticias()">
+          <option value="">Todas las secciones</option>
+          <option *ngFor="let s of secciones" [value]="s.id">{{ s.nombre }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Info resultados -->
+    <div class="results-info" *ngIf="searchTerm || seccionSeleccionada">
+      <strong>{{ noticiasFiltradas.length }}</strong> resultado(s)
+      <span *ngIf="seccionSeleccionada"> en "{{ getSeccionNombre(+seccionSeleccionada) }}"</span>
+      &nbsp;·&nbsp;
+      <span class="clear-link" (click)="limpiarBusqueda()">Limpiar filtros</span>
+    </div>
+
+    <!-- Grid noticias normales -->
+    <div *ngIf="noticiasNormales.length > 0">
+      <div class="section-label">
+        <span>{{ noticiasUrgentes.length > 0 ? 'Otras noticias' : 'Noticias' }}</span>
+      </div>
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+        <div *ngFor="let noticia of noticiasNormales; let i = index" class="col">
+          <article class="noticia-card h-100"
+                   [style.animation-delay]="(i * 0.06) + 's'"
+                   (click)="openNoticiaDetail(noticia)">
+
+            <!-- Imagen -->
+            <div class="noticia-image-wrapper">
+              <img *ngIf="noticia.imagen" [src]="noticia.imagen" [alt]="noticia.titulo">
+              <div *ngIf="!noticia.imagen" class="img-placeholder">
+                <i class="bi bi-image"></i>
+                <span>Sin imagen</span>
+              </div>
+              <div class="unread-indicator" *ngIf="!noticia.leida"></div>
+            </div>
+
+            <!-- Body -->
+            <div class="card-body-premium">
+              <span class="badge-seccion" [ngClass]="getBadgeClase(noticia.seccionId)">
+                {{ getSeccionNombre(noticia.seccionId) }}
+              </span>
+              <div class="card-fecha">
+                <i class="bi bi-calendar3" style="font-size:10px;"></i>
+                {{ formatDate(noticia.fechaPublicacion) }}
+              </div>
+              <div class="card-titulo">{{ noticia.titulo }}</div>
+              <div class="card-desc">{{ noticia.descripcion }}</div>
+              <div class="card-footer-premium">
+                <span class="read-link">
+                  Leer más <i class="bi bi-arrow-right"></i>
+                </span>
+                <span class="unread-badge" *ngIf="!noticia.leida">Nueva</span>
+              </div>
+            </div>
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="noticiasFiltradas.length === 0 && !isLoading" class="empty-state">
+      <i class="bi bi-newspaper"></i>
+      <h3>{{ (searchTerm || seccionSeleccionada) ? 'Sin resultados' : 'Sin noticias' }}</h3>
+      <p>{{ (searchTerm || seccionSeleccionada) ? 'Intenta con otro término o sección' : 'Aún no hay noticias publicadas para ti' }}</p>
+      <button *ngIf="searchTerm || seccionSeleccionada" class="btn-ver-todas" (click)="limpiarBusqueda()">
+        Ver todas las noticias
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ═══ MODAL DETALLE ═════════════════════════════════════════════════════ -->
+  <div class="modal fade modal-premium"
+       [class.show]="selectedNoticia"
+       [style.display]="selectedNoticia ? 'block' : 'none'"
+       tabindex="-1"
+       (click)="closeNoticiaDetail()">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"
+         (click)="$event.stopPropagation()">
+      <article class="modal-content" *ngIf="selectedNoticia">
+
+        <button type="button"
+                class="btn-close position-absolute top-0 end-0 m-3"
+                style="z-index:1050;"
+                (click)="closeNoticiaDetail()"
+                aria-label="Cerrar">
+        </button>
+
+        <div *ngIf="selectedNoticia.imagen" class="modal-img-detail">
+          <img [src]="selectedNoticia.imagen" [alt]="selectedNoticia.titulo">
+        </div>
+
+        <div class="modal-body">
+          <div *ngIf="isUrgente(selectedNoticia)" class="mb-3">
+            <span class="badge-urgente-modal">
+              <span class="urgente-dot-sm"></span>
+              {{ selectedNoticia.prioridad === 'URGENTE' ? 'URGENTE' : 'DESTACADA' }}
+            </span>
+          </div>
+
+          <span class="badge-seccion mb-3 d-inline-block"
+                [ngClass]="getBadgeClase(selectedNoticia.seccionId)"
+                *ngIf="selectedNoticia.seccionId">
+            {{ getSeccionNombre(selectedNoticia.seccionId) }}
+          </span>
+
+          <div class="modal-fecha">
+            <i class="bi bi-calendar3"></i>
+            {{ formatDate(selectedNoticia.fechaPublicacion) }}
+            <span *ngIf="selectedNoticia.publicadoPor" style="opacity:.45;">
+              &nbsp;&middot;&nbsp; Por {{ selectedNoticia.publicadoPor }}
+            </span>
+          </div>
+
+          <div class="modal-titulo">{{ selectedNoticia.titulo }}</div>
+          <div class="modal-desc">{{ selectedNoticia.descripcion }}</div>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <!-- Backdrop -->
+  <div class="modal-backdrop fade"
+       [class.show]="selectedNoticia"
+       *ngIf="selectedNoticia"
+       (click)="closeNoticiaDetail()">
+  </div>
+
+  <!-- SPINNER -->
+  <div *ngIf="isLoading" class="spinner-overlay">
+    <div class="spinner-border" style="width:2.5rem;height:2.5rem;" role="status">
+      <span class="visually-hidden">Cargando…</span>
+    </div>
+    <p>Cargando noticias…</p>
+  </div>
+
+</div>

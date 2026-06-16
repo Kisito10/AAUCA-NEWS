@@ -1,0 +1,217 @@
+<div class="container-fluid noticias-page">
+
+  <!-- Header -->
+  <header class="page-header py-4 mb-4">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <h1 class="display-5 fw-bold mb-2">Noticias</h1>
+          <p class="text-muted mb-0">Mantente informado con las últimas novedades</p>
+        </div>
+        <div class="col-md-6">
+          <div class="d-flex gap-2 justify-content-md-end mt-3 mt-md-0">
+            <a routerLink="/login" class="btn btn-outline-primary">Iniciar Sesión</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Error -->
+  <div class="container" *ngIf="errorMessage">
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      {{ errorMessage }}
+      <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+    </div>
+  </div>
+
+  <main class="container mb-5">
+
+    <!-- Sección de noticias urgentes -->
+    <section *ngIf="noticiasUrgentes.length > 0" class="mb-5">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="urgente-dot"></span>
+        <h2 class="h5 fw-bold text-danger mb-0">Noticias urgentes</h2>
+      </div>
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <div class="col" *ngFor="let noticia of noticiasUrgentes">
+          <article class="card h-100 shadow-sm noticia-card noticia-urgente"
+                   (click)="openDetail(noticia)">
+
+            <div class="noticia-img-wrapper position-relative">
+              <span class="badge bg-danger position-absolute top-0 start-0 m-2 d-flex align-items-center gap-1"
+                    style="z-index: 1;">
+                <span class="urgente-dot-sm"></span> URGENTE
+              </span>
+              <img *ngIf="noticia.imagen"
+                   [src]="noticia.imagen"
+                   class="noticia-img"
+                   [alt]="noticia.titulo"
+                   (error)="onImageError($event, noticia)"
+                   (load)="onImageLoad(noticia)">
+              <div *ngIf="!noticia.imagen"
+                   class="noticia-img-placeholder d-flex flex-column align-items-center justify-content-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <small class="mt-2 text-white">Sin imagen</small>
+              </div>
+            </div>
+
+            <div class="card-body d-flex flex-column">
+              <span class="badge bg-primary mb-2 align-self-start" *ngIf="noticia.seccionId">
+                {{ getSeccionNombre(noticia.seccionId) }}
+              </span>
+              <time class="text-muted small mb-2 d-flex align-items-center">
+                <i class="bi bi-calendar3 me-2"></i>
+                {{ formatDate(noticia.fechaPublicacion) }}
+              </time>
+              <h2 class="card-title h5 fw-bold mb-2 text-truncate-2">{{ noticia.titulo }}</h2>
+              <p class="card-text text-muted flex-grow-1 text-truncate-3 mb-3">{{ noticia.descripcion }}</p>
+              <span class="text-danger fw-semibold small">Ver más →</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Separador -->
+    <hr *ngIf="noticiasUrgentes.length > 0 && noticiasNormales.length > 0" class="mb-4">
+
+    <!-- Noticias normales -->
+    <section *ngIf="noticiasNormales.length > 0">
+      <h2 class="h5 fw-bold mb-3 text-muted" *ngIf="noticiasUrgentes.length > 0">Otras noticias</h2>
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <div class="col" *ngFor="let noticia of noticiasNormales">
+          <article class="card h-100 shadow-sm noticia-card" (click)="openDetail(noticia)">
+
+            <div class="noticia-img-wrapper position-relative">
+              <img *ngIf="noticia.imagen"
+                   [src]="noticia.imagen"
+                   class="noticia-img"
+                   [alt]="noticia.titulo"
+                   (error)="onImageError($event, noticia)"
+                   (load)="onImageLoad(noticia)">
+              <div *ngIf="!noticia.imagen"
+                   class="noticia-img-placeholder d-flex flex-column align-items-center justify-content-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <small class="mt-2 text-white">Sin imagen</small>
+              </div>
+            </div>
+
+            <div class="card-body d-flex flex-column">
+              <span class="badge bg-primary mb-2 align-self-start" *ngIf="noticia.seccionId">
+                {{ getSeccionNombre(noticia.seccionId) }}
+              </span>
+              <time class="text-muted small mb-2 d-flex align-items-center">
+                <i class="bi bi-calendar3 me-2"></i>
+                {{ formatDate(noticia.fechaPublicacion) }}
+              </time>
+              <h2 class="card-title h5 fw-bold mb-2 text-truncate-2">{{ noticia.titulo }}</h2>
+              <p class="card-text text-muted flex-grow-1 text-truncate-3 mb-3">{{ noticia.descripcion }}</p>
+              <span class="text-primary fw-semibold small">Ver más →</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FIX: empty state usa noticiasFiltradas en vez de noticiasPublicadas -->
+    <div class="text-center py-5"
+         *ngIf="noticiasFiltradas.length === 0 && !isLoading">
+      <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="1.5" class="text-muted mb-3">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+      </svg>
+      <h3 class="h4 text-muted mb-2">No hay noticias publicadas</h3>
+      <p class="text-muted">Vuelve pronto para ver las últimas novedades</p>
+    </div>
+
+  </main>
+
+  <!-- Detail Modal -->
+  <div class="modal fade" [class.show]="selectedNoticia"
+       [style.display]="selectedNoticia ? 'block' : 'none'"
+       tabindex="-1" (click)="closeDetail()">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+      <article class="modal-content" (click)="$event.stopPropagation()" *ngIf="selectedNoticia">
+
+        <button type="button"
+                class="btn-close position-absolute top-0 end-0 m-3 bg-white rounded-circle p-2 shadow"
+                style="z-index: 1050;" (click)="closeDetail()" aria-label="Close"></button>
+
+        <div *ngIf="selectedNoticia.imagen" class="modal-img-detail">
+          <img [src]="selectedNoticia.imagen"
+               class="w-100"
+               style="max-height: 500px; object-fit: contain; background: #f8f9fa;"
+               [alt]="selectedNoticia.titulo"
+               (error)="onImageError($event, selectedNoticia)">
+        </div>
+
+        <div class="modal-body p-4 p-md-5">
+          <!-- FIX: usa isUrgente() en vez de .urgente directo -->
+          <div class="d-flex align-items-center gap-2 mb-3" *ngIf="isUrgente(selectedNoticia)">
+            <span class="badge bg-danger d-flex align-items-center gap-1 px-3 py-2">
+              <span class="urgente-dot-sm"></span> URGENTE
+            </span>
+          </div>
+          <span class="badge bg-primary mb-3 d-inline-block" *ngIf="selectedNoticia.seccionId">
+            {{ getSeccionNombre(selectedNoticia.seccionId) }}
+          </span>
+          <time class="d-flex align-items-center text-muted mb-3">
+            <i class="bi bi-calendar3 me-2"></i>
+            {{ formatDate(selectedNoticia.fechaPublicacion) }}
+          </time>
+          <h1 class="display-6 fw-bold mb-4">{{ selectedNoticia.titulo }}</h1>
+          <div class="modal-description">
+            <p class="lead text-muted">{{ selectedNoticia.descripcion }}</p>
+          </div>
+        </div>
+
+      </article>
+    </div>
+  </div>
+  <div class="modal-backdrop fade" [class.show]="selectedNoticia" *ngIf="selectedNoticia"></div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading"
+       class="position-fixed top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center"
+       style="background: rgba(255,255,255,0.95); z-index: 9999;">
+    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p class="text-muted fw-semibold">Cargando...</p>
+  </div>
+
+</div>
+
+<style>
+.urgente-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: #dc3545; display: inline-block; flex-shrink: 0;
+  animation: pulso 1.2s infinite;
+}
+.urgente-dot-sm {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: white; display: inline-block;
+  animation: pulso 1.2s infinite;
+}
+@keyframes pulso {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(1.4); }
+}
+.noticia-urgente {
+  border: 1.5px solid #dc3545 !important;
+}
+</style>

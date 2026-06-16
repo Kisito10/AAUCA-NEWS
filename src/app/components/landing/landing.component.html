@@ -1,0 +1,541 @@
+<!-- landing.component.html -->
+
+<div class="aauca-root">
+
+  <!-- ════════════════════════════════════════
+       NAVBAR
+  ════════════════════════════════════════ -->
+  <nav class="aauca-nav">
+    <div class="aauca-nav__inner">
+      <a class="aauca-nav__brand" href="#inicio">
+        <img src="assets/images/AAUCA.png" alt="AAUCA" class="aauca-nav__logo"/>
+        <span class="aauca-nav__brand-gold">AAUCA</span><span class="aauca-nav__brand-white">NEWS</span>
+      </a>
+      <div class="aauca-nav__links d-none d-lg-flex">
+        <a class="aauca-nav__link" href="#inicio">Inicio</a>
+        <a class="aauca-nav__link" href="#noticias">Noticias</a>
+      </div>
+      <div class="aauca-nav__actions d-none d-lg-flex">
+        <button class="aauca-btn-ghost" (click)="navigateToLogin()">Iniciar sesión</button>
+        <button class="aauca-btn-gold"  (click)="abrirFormSolicitud()">Solicitar acceso</button>
+      </div>
+      <button class="aauca-nav__toggler d-lg-none"
+              (click)="mobileOpen = !mobileOpen"
+              [class.active]="mobileOpen">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="aauca-nav__mobile" [class.open]="mobileOpen">
+      <a class="aauca-nav__link" href="#inicio"   (click)="mobileOpen=false">Inicio</a>
+      <a class="aauca-nav__link" href="#noticias" (click)="mobileOpen=false">Noticias</a>
+      <div class="aauca-nav__mobile-actions">
+        <button class="aauca-btn-ghost w-full" (click)="navigateToLogin(); mobileOpen=false">Iniciar sesión</button>
+        <button class="aauca-btn-gold  w-full" (click)="abrirFormSolicitud(); mobileOpen=false">Solicitar acceso</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ════════════════════════════════════════
+       HERO con slideshow integrado
+  ════════════════════════════════════════ -->
+  <section class="aauca-hero" id="inicio">
+
+    <!-- Slides de fondo: crossfade con <img> para máxima compatibilidad -->
+    <div
+      class="aauca-slide"
+      *ngFor="let img of slideshowImages; let i = index"
+      [class.aauca-slide--visible]="i === currentSlide">
+      <img [src]="img" alt="" aria-hidden="true" class="aauca-slide__img"/>
+    </div>
+
+    <!-- Overlay de oscurecimiento encima de los slides -->
+    <div class="aauca-slide-overlay"></div>
+
+    <!-- Contenido del hero -->
+    <div class="aauca-hero__inner">
+      <div class="aauca-hero__text">
+        <div class="aauca-hero__eyebrow">
+          <span class="aauca-hero__eyebrow-line"></span>
+          <span>Bienvenidos a</span>
+        </div>
+        <h1 class="aauca-hero__title">
+          AAUCA <span class="aauca-hero__title-gold">NEWS</span>
+        </h1>
+
+        <!-- Barra de acento: negro · oro · azul · rojo -->
+        <div class="aauca-hero__flagbar">
+          <span class="fb-negro"></span>
+          <span class="fb-oro"></span>
+          <span class="fb-azul"></span>
+          <span class="fb-rojo"></span>
+        </div>
+
+        <p class="aauca-hero__desc">
+          Tu fuente confiable de noticias, eventos y novedades
+          de nuestra comunidad universitaria.
+        </p>
+        <div class="aauca-hero__ctas">
+          <button class="aauca-btn-gold aauca-btn-gold--lg" (click)="abrirFormSolicitud()">
+            Solicitar acceso
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+              <polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </button>
+          <button class="aauca-btn-ghost aauca-btn-ghost--lg" (click)="navigateToLogin()">
+            Iniciar sesión
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Indicadores de slide (puntos) -->
+    <div class="aauca-hero__indicators">
+      <span
+        class="aauca-hero__dot"
+        *ngFor="let img of slideshowImages; let i = index"
+        [class.active]="i === currentSlide"
+        (click)="goToSlide(i)">
+      </span>
+    </div>
+
+    <!-- Scroll hint -->
+    <div class="aauca-scroll-hint">
+      <div class="aauca-scroll-hint__mouse">
+        <div class="aauca-scroll-hint__wheel"></div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ════════════════════════════════════════
+       TICKER · ÚLTIMA HORA
+  ════════════════════════════════════════ -->
+  <div class="aauca-ticker" *ngIf="noticiasDestacadas.length > 0">
+    <span class="aauca-ticker__label">
+      <span class="aauca-ticker__pulse"></span>
+      Última hora
+    </span>
+    <div class="aauca-ticker__track">
+      <div class="aauca-ticker__move">
+        <span class="aauca-ticker__item" *ngFor="let n of tickerItems">
+          <span class="aauca-ticker__dot"></span>{{ n.titulo }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       NOTICIAS DESTACADAS
+  ════════════════════════════════════════ -->
+  <section class="aauca-features" id="noticias">
+    <div class="aauca-features__inner">
+      <div class="aauca-section-head">
+        <div class="aauca-divider"><span class="aauca-divider__diamond"></span></div>
+        <h2 class="aauca-section-head__title">Noticias destacadas</h2>
+        <p class="aauca-section-head__sub">Lo más importante de la comunidad AAUCA</p>
+      </div>
+
+      <div class="aauca-news-loading" *ngIf="cargandoNoticias">
+        <span class="aauca-spinner aauca-spinner--sm"></span>
+        Cargando noticias…
+      </div>
+
+      <div class="aauca-news-grid" *ngIf="!cargandoNoticias && noticiasDestacadas.length > 0">
+        <article class="aauca-news-card" (click)="abrirGate(n)" *ngFor="let n of noticiasDestacadas">
+          <div class="aauca-news-card__media">
+            <img *ngIf="imagenDe(n)" [src]="imagenDe(n)" [alt]="n.titulo"/>
+            <div class="aauca-news-card__ph" *ngIf="!imagenDe(n)">
+              AAUCA<span>NEWS</span>
+            </div>
+            <span class="aauca-news-card__badge"
+                  [class.aauca-news-card__badge--urgente]="n.prioridad === 'URGENTE'">
+              {{ etiquetaPrioridad(n) }}
+            </span>
+          </div>
+          <div class="aauca-news-card__body">
+            <h3 class="aauca-news-card__title">{{ n.titulo }}</h3>
+            <p class="aauca-news-card__excerpt">{{ extractoDe(n) }}</p>
+            <div class="aauca-news-card__meta">
+              <span>{{ fechaDe(n) }}</span>
+              <span *ngIf="n.publicadoPor">· {{ n.publicadoPor }}</span>
+              <span class="aauca-news-card__more">Leer más →</span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <p class="aauca-news-empty" *ngIf="!cargandoNoticias && noticiasDestacadas.length === 0">
+        Las noticias de la comunidad están disponibles para los residentes registrados.
+      </p>
+
+      <div class="aauca-locked">
+        <div class="aauca-locked__icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.8">
+            <rect x="3" y="11" width="18" height="11" rx="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <div class="aauca-locked__text">
+          <h3>¿Quieres leerlo todo?</h3>
+          <p>Aquí solo ves lo más importante. Solicita acceso o inicia sesión para leer todas
+             las noticias de tu edificio, tu sección y toda la comunidad.</p>
+        </div>
+        <div class="aauca-locked__actions">
+          <button class="aauca-btn-gold" (click)="abrirFormSolicitud()">Solicitar acceso</button>
+          <button class="aauca-btn-ghost" (click)="navigateToLogin()">Iniciar sesión</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       MODAL — SOLICITUD DE REGISTRO
+  ════════════════════════════════════════ -->
+  <div class="aauca-modal-backdrop"
+       *ngIf="mostrarFormSolicitud"
+       (click)="cerrarFormSolicitud()">
+    <div class="aauca-modal" (click)="$event.stopPropagation()">
+
+      <div class="aauca-modal__header">
+        <div class="aauca-modal__logo">
+          <img src="assets/images/AAUCA.png" alt="AAUCA"/>
+        </div>
+        <div>
+          <h2 class="aauca-modal__title">Solicitar Acceso</h2>
+          <p class="aauca-modal__subtitle">Registro de Residente — AAUCA NEWS</p>
+        </div>
+        <button class="aauca-modal__close" (click)="cerrarFormSolicitud()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="aauca-modal__divider">
+        <div class="aauca-divider"><span class="aauca-divider__diamond"></span></div>
+      </div>
+
+      <!-- ÉXITO -->
+      <div class="aauca-modal__success" *ngIf="solicitudEnviada">
+        <div class="aauca-success-icon">✓</div>
+        <h3 class="aauca-success-title">¡Solicitud Enviada!</h3>
+        <p class="aauca-success-msg">
+          Tu solicitud ha sido registrada correctamente.<br>
+          El Director la revisará y recibirás tus credenciales de acceso en<br>
+          <strong>{{ formSolicitud.email }}</strong><br>
+          si es aprobada.
+        </p>
+        <button class="aauca-btn-gold aauca-btn-gold--lg" (click)="cerrarFormSolicitud()">
+          Volver al inicio
+        </button>
+      </div>
+
+      <ng-container *ngIf="!solicitudEnviada">
+        <!-- Indicador de pasos -->
+        <div class="aauca-steps">
+          <div class="aauca-step" [class.active]="modalStep >= 0" [class.done]="modalStep > 0">
+            <div class="aauca-step__dot">1</div>
+            <span class="aauca-step__lbl">Identidad</span>
+          </div>
+          <div class="aauca-step__line" [class.done]="modalStep > 0"></div>
+          <div class="aauca-step" [class.active]="modalStep >= 1" [class.done]="modalStep > 1">
+            <div class="aauca-step__dot">2</div>
+            <span class="aauca-step__lbl">Perfil</span>
+          </div>
+          <div class="aauca-step__line" [class.done]="modalStep > 1"></div>
+          <div class="aauca-step" [class.active]="modalStep >= 2">
+            <div class="aauca-step__dot">3</div>
+            <span class="aauca-step__lbl">Alojamiento</span>
+          </div>
+        </div>
+
+        <div class="aauca-modal__body">
+          <div class="aauca-alert aauca-alert--error" *ngIf="errorSolicitud">
+            {{ errorSolicitud }}
+          </div>
+
+          <!-- PASO 0 — Identidad -->
+          <div *ngIf="modalStep === 0" class="aauca-form-step">
+            <div class="aauca-grid-2">
+              <div class="aauca-field">
+                <label class="aauca-field__label">Nombre <span class="aauca-required">*</span></label>
+                <input class="aauca-field__input"
+                       [class.aauca-field__input--error]="errores['nombre']"
+                       type="text" name="nombre"
+                       [(ngModel)]="formSolicitud.nombre"
+                       placeholder="Kisito..." autocomplete="given-name"/>
+                <span class="aauca-field__error" *ngIf="errores['nombre']">⚠️ {{ errores['nombre'] }}</span>
+              </div>
+              <div class="aauca-field">
+                <label class="aauca-field__label">Apellidos</label>
+                <input class="aauca-field__input" type="text" name="apellidos"
+                       [(ngModel)]="formSolicitud.apellidos"
+                       placeholder="Engono Mba" autocomplete="family-name"/>
+              </div>
+            </div>
+            <div class="aauca-field">
+              <label class="aauca-field__label">Email <span class="aauca-required">*</span></label>
+              <input class="aauca-field__input"
+                     [class.aauca-field__input--error]="errores['email']"
+                     type="email" name="email"
+                     [(ngModel)]="formSolicitud.email"
+                     placeholder="kisito@gmail.com" autocomplete="email"/>
+              <span class="aauca-field__error" *ngIf="errores['email']">⚠️ {{ errores['email'] }}</span>
+              <span class="aauca-field__hint" *ngIf="!errores['email']">
+                Recibirás tus credenciales en este correo si la solicitud es aprobada.
+              </span>
+            </div>
+            <div class="aauca-modal__nav">
+              <span></span>
+              <button class="aauca-btn-gold" (click)="nextStep()">
+                Continuar
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- PASO 1 — Perfil -->
+          <div *ngIf="modalStep === 1" class="aauca-form-step">
+            <div class="aauca-field" style="text-align:center;margin-bottom:1.2rem;">
+              <label class="aauca-field__label">Foto <span class="aauca-field__optional">(opcional)</span></label>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:.6rem;">
+                <div style="width:80px;height:80px;border-radius:50%;overflow:hidden;
+                            border:2px solid rgba(255,215,0,.4);background:rgba(255,255,255,.06);
+                            display:flex;align-items:center;justify-content:center;">
+                  <img *ngIf="fotoPreview" [src]="fotoPreview" style="width:100%;height:100%;object-fit:cover;">
+                  <span *ngIf="!fotoPreview" style="font-size:2rem;opacity:.5;">👤</span>
+                </div>
+                <label class="aauca-btn-ghost" style="cursor:pointer;font-size:.8rem;padding:.35rem .9rem;">
+                  {{ fotoPreview ? '📷 Cambiar foto' : '📷 Añadir foto' }}
+                  <input type="file" accept="image/*" style="display:none;" (change)="onFotoSelected($event)">
+                </label>
+                <span class="aauca-field__error" *ngIf="errores['foto']">⚠️ {{ errores['foto'] }}</span>
+                <span style="font-size:.72rem;opacity:.5;" *ngIf="!errores['foto']">JPG o PNG · máx. 3 MB</span>
+              </div>
+            </div>
+            <div class="aauca-grid-2">
+              <div class="aauca-field">
+                <label class="aauca-field__label">Género <span class="aauca-required">*</span></label>
+                <select class="aauca-field__input aauca-field__select"
+                        [class.aauca-field__input--error]="errores['genero']"
+                        name="genero" [(ngModel)]="formSolicitud.genero">
+                  <option value="">— Sin especificar —</option>
+                  <option value="M">Masculino</option>
+                  <option value="F">Femenino</option>
+                  <option value="NB">No binario</option>
+                </select>
+                <span class="aauca-field__error" *ngIf="errores['genero']">⚠️ {{ errores['genero'] }}</span>
+              </div>
+              <div class="aauca-field">
+                <label class="aauca-field__label">Facultad / Carrera <span class="aauca-required">*</span></label>
+                <input class="aauca-field__input"
+                       [class.aauca-field__input--error]="errores['facultad']"
+                       type="text" name="facultad"
+                       [(ngModel)]="formSolicitud.facultad"
+                       placeholder="Ej: Ingenierías, Medicina…"/>
+                <span class="aauca-field__error" *ngIf="errores['facultad']">⚠️ {{ errores['facultad'] }}</span>
+              </div>
+            </div>
+            <div class="aauca-field">
+              <label class="aauca-field__label">Selección deportiva <span class="aauca-field__optional">(opcional)</span></label>
+              <input class="aauca-field__input" type="text" name="seleccion"
+                     [(ngModel)]="formSolicitud.seleccion"
+                     placeholder="Ej: Fútbol, Baloncesto, Atletismo…"/>
+            </div>
+            <div class="aauca-modal__nav">
+              <button class="aauca-btn-ghost" (click)="modalStep = 0">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="15 18 9 12 15 6"/>
+                </svg>
+                Atrás
+              </button>
+              <button class="aauca-btn-gold" (click)="nextStep()">
+                Continuar
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- PASO 2 — Alojamiento -->
+          <div *ngIf="modalStep === 2" class="aauca-form-step">
+            <div class="aauca-grid-2">
+              <div class="aauca-field">
+                <label class="aauca-field__label">Edificio <span class="aauca-required">*</span></label>
+                <select class="aauca-field__input aauca-field__select"
+                        [class.aauca-field__input--error]="errores['edificio']"
+                        [ngModel]="edificioSeleccionado"
+                        (ngModelChange)="onEdificioChange($event)">
+                  <option [ngValue]="null">— Seleccionar —</option>
+                  <option *ngFor="let e of edificios" [ngValue]="e.id">🏢 {{ e.nombre }}</option>
+                </select>
+                <span class="aauca-field__error" *ngIf="errores['edificio']">⚠️ {{ errores['edificio'] }}</span>
+              </div>
+              <div class="aauca-field">
+                <label class="aauca-field__label">Habitación <span class="aauca-required">*</span></label>
+                <p class="aauca-field__placeholder-msg" *ngIf="!edificioSeleccionado">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  Selecciona un edificio primero
+                </p>
+                <p class="aauca-field__placeholder-msg" *ngIf="edificioSeleccionado && habitaciones.length === 0">
+                  <span class="aauca-spinner aauca-spinner--sm"></span>
+                  Cargando habitaciones…
+                </p>
+                <select class="aauca-field__input aauca-field__select"
+                        [class.aauca-field__input--error]="errores['habitacion']"
+                        *ngIf="habitaciones.length > 0"
+                        [ngModel]="null"
+                        (ngModelChange)="onHabitacionChange($event)">
+                  <option [ngValue]="null">— Seleccionar —</option>
+                  <optgroup *ngFor="let planta of plantasEdificio" [label]="'Planta ' + planta">
+                    <option *ngFor="let h of habitacionesPorPlanta(planta)" [ngValue]="h.id">
+                      🚪 {{ h.numero }}
+                    </option>
+                  </optgroup>
+                </select>
+                <span class="aauca-field__error" *ngIf="errores['habitacion']">⚠️ {{ errores['habitacion'] }}</span>
+              </div>
+            </div>
+
+            <div class="aauca-field__selected-badge" *ngIf="formSolicitud.habitacion">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Habitación seleccionada:
+              <strong>{{ formSolicitud.edificio }} — {{ formSolicitud.habitacion }}</strong>
+            </div>
+
+            <div class="aauca-field">
+              <label class="aauca-field__label">Mensaje <span class="aauca-field__optional">(opcional)</span></label>
+              <textarea class="aauca-field__input"
+                        name="mensaje" [(ngModel)]="formSolicitud.mensaje"
+                        placeholder="Información adicional para el Director…" rows="3"></textarea>
+            </div>
+
+            <!-- Resumen -->
+            <div class="aauca-summary">
+              <div class="aauca-summary__title">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                Resumen de tu solicitud
+              </div>
+              <div class="aauca-summary__row" *ngIf="fotoPreview">
+                <span class="aauca-summary__key">Foto</span>
+                <span class="aauca-summary__val">
+                  <img [src]="fotoPreview" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,215,0,.4);">
+                </span>
+              </div>
+              <div class="aauca-summary__row">
+                <span class="aauca-summary__key">Nombre</span>
+                <span class="aauca-summary__val">{{ formSolicitud.nombre }} {{ formSolicitud.apellidos }}</span>
+              </div>
+              <div class="aauca-summary__row">
+                <span class="aauca-summary__key">Email</span>
+                <span class="aauca-summary__val">{{ formSolicitud.email }}</span>
+              </div>
+              <div class="aauca-summary__row" *ngIf="formSolicitud.genero">
+                <span class="aauca-summary__key">Género</span>
+                <span class="aauca-summary__val">
+                  {{ formSolicitud.genero === 'M' ? 'Masculino' : formSolicitud.genero === 'F' ? 'Femenino' : 'No binario' }}
+                </span>
+              </div>
+              <div class="aauca-summary__row" *ngIf="formSolicitud.facultad">
+                <span class="aauca-summary__key">Facultad</span>
+                <span class="aauca-summary__val">{{ formSolicitud.facultad }}</span>
+              </div>
+              <div class="aauca-summary__row" *ngIf="formSolicitud.seleccion">
+                <span class="aauca-summary__key">Selección</span>
+                <span class="aauca-summary__val">{{ formSolicitud.seleccion }}</span>
+              </div>
+              <div class="aauca-summary__row" *ngIf="formSolicitud.edificio || formSolicitud.habitacion">
+                <span class="aauca-summary__key">Alojamiento</span>
+                <span class="aauca-summary__val">
+                  {{ formSolicitud.edificio }}
+                  <span *ngIf="formSolicitud.habitacion">— {{ formSolicitud.habitacion }}</span>
+                </span>
+              </div>
+            </div>
+
+            <div class="aauca-modal__nav">
+              <button class="aauca-btn-ghost" (click)="modalStep = 1">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="15 18 9 12 15 6"/>
+                </svg>
+                Atrás
+              </button>
+              <button class="aauca-btn-gold" (click)="enviarSolicitud()" [disabled]="enviandoSolicitud">
+                <span *ngIf="enviandoSolicitud" class="aauca-spinner aauca-spinner--dark"></span>
+                {{ enviandoSolicitud ? 'Enviando…' : 'Enviar solicitud' }}
+                <svg *ngIf="!enviandoSolicitud" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5">
+                  <line x1="22" y1="2" x2="11" y2="13"/>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </ng-container>
+
+      <div class="aauca-modal__footer">
+        El Director o el celador de tu edificio revisará tu solicitud y recibirás respuesta por correo.
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       GATE — NOTICIA BLOQUEADA
+  ════════════════════════════════════════ -->
+  <div class="aauca-modal-backdrop" *ngIf="noticiaGate" (click)="cerrarGate()">
+    <div class="aauca-modal aauca-gate" (click)="$event.stopPropagation()">
+      <button class="aauca-modal__close aauca-gate__close" (click)="cerrarGate()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+      <div class="aauca-gate__icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="11" width="18" height="11" rx="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <h3 class="aauca-gate__title">Contenido para residentes</h3>
+      <p class="aauca-gate__msg">
+        Para leer <strong>«{{ noticiaGate.titulo }}»</strong> completa,
+        inicia sesión con tu cuenta o solicita acceso a AAUCA NEWS.
+      </p>
+      <div class="aauca-gate__actions">
+        <button class="aauca-btn-gold w-full" (click)="gateSolicitar()">Solicitar acceso</button>
+        <button class="aauca-btn-ghost w-full" (click)="gateLogin()">Iniciar sesión</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       FOOTER
+  ════════════════════════════════════════ -->
+  <footer class="aauca-footer">
+    <div class="aauca-footer__inner">
+      <a class="aauca-nav__brand" href="#inicio">
+        <span class="aauca-nav__brand-gold">AAUCA</span><span class="aauca-nav__brand-white">NEWS</span>
+      </a>
+      <p>Plataforma de comunicación de la Residencia Universitaria AAUCA</p>
+      <span class="aauca-footer__copy">© 2026 AAUCA · Comunicación que une a la comunidad</span>
+    </div>
+  </footer>
+
+</div>

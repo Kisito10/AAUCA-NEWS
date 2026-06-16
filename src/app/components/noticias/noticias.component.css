@@ -1,0 +1,221 @@
+/* noticias.component.css */
+
+/* ===== HEADER ===== */
+.page-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+.page-header h1 { color: white; }
+.page-header p  { color: rgba(255, 255, 255, 0.9); }
+
+/* ===== IMAGEN ===== */
+.noticia-img-wrapper {
+  width: 100%;
+  overflow: hidden;
+  background: #f8f9fa;
+  border-radius: 8px 8px 0 0;
+}
+.noticia-img-wrapper img,
+.noticia-img-wrapper .noticia-img {
+  width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  object-fit: unset !important;
+  display: block !important;
+}
+.noticia-img-placeholder {
+  width: 100%;
+  height: 280px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px 8px 0 0;
+}
+
+/* ===== CARD BASE ===== */
+.noticia-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none !important;
+  overflow: hidden;
+  animation: fadeIn 0.5s ease-out;
+}
+.noticia-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* ===== CARD URGENTE ===== */
+.noticia-urgente {
+  border: 2px solid #dc3545 !important;
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1) !important;
+}
+.noticia-urgente:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(220, 53, 69, 0.25) !important;
+}
+
+/* Fondo levemente rojo en el placeholder de urgentes sin imagen */
+.noticia-urgente .noticia-img-placeholder {
+  background: linear-gradient(135deg, #dc3545 0%, #a71d2a 100%);
+}
+
+/* ===== SECCIÓN URGENTES — encabezado ===== */
+.urgente-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+/* Punto pulsante grande (junto al título de sección) */
+.urgente-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #dc3545;
+  display: inline-block;
+  flex-shrink: 0;
+  animation: pulso 1.2s ease-in-out infinite;
+}
+
+/* Punto pulsante pequeño (dentro del badge sobre la imagen) */
+.urgente-dot-sm {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fff;
+  display: inline-block;
+  flex-shrink: 0;
+  animation: pulso 1.2s ease-in-out infinite;
+}
+
+@keyframes pulso {
+  0%, 100% { opacity: 1;   transform: scale(1);   }
+  50%       { opacity: 0.5; transform: scale(1.45); }
+}
+
+/* Badge URGENTE sobre la imagen (posición absoluta) */
+.badge-urgente-overlay {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #dc3545;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-radius: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* ===== TRUNCADO DE TEXTO ===== */
+.text-truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.4;
+  max-height: 2.8em;
+}
+.text-truncate-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.6;
+  max-height: 4.8em;
+}
+
+/* ===== MODAL DETALLE ===== */
+.modal-img-detail {
+  width: 100%;
+  max-height: 500px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-img-detail img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.modal.show { display: block !important; }
+.btn-close  { opacity: 1; }
+
+/* Badge urgente en el modal de detalle */
+.badge-urgente-modal {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #dc3545;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 6px 14px;
+  border-radius: 20px;
+}
+
+/* ===== UPLOAD / DRAG-AND-DROP ===== */
+.upload-area {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+  padding: 2rem;
+}
+.upload-area:hover         { border-color: #0d6efd !important; background: #e7f1ff; }
+.upload-area.drag-over     { border-color: #0d6efd !important; background: #cfe2ff; transform: scale(1.02); }
+.image-preview-container   { position: relative; width: 100%; max-width: 400px; margin: 0 auto; }
+.image-preview             { width: 100%; max-height: 300px; object-fit: contain; border-radius: 8px; border: 2px solid #dee2e6; }
+
+/* ===== MISC ===== */
+.card-body   { padding: 1.25rem; }
+.card-footer { background-color: #f8f9fa; border-top: 1px solid #dee2e6; }
+.badge       { font-weight: 500; padding: 0.35em 0.65em; }
+.alert       { border-radius: 8px; animation: fadeIn 0.3s ease-out; }
+.loading-spinner { display: flex; justify-content: center; align-items: center; min-height: 300px; }
+
+/* ===== ANIMACIONES ===== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== BOTONES ===== */
+.btn:hover  { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+.btn:active { transform: translateY(0); }
+.btn svg    { margin-right: 0.25rem; vertical-align: middle; }
+.noticia-card svg { vertical-align: middle; }
+
+/* ===== TRANSICIONES GLOBALES ===== */
+* { transition: background-color 0.2s ease, border-color 0.2s ease; }
+button, .btn { transition: all 0.2s ease; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .noticia-img-placeholder { height: 240px; }
+  .page-header             { text-align: center; }
+  .page-header .d-flex     { flex-direction: column; }
+  .modal-img-detail        { max-height: 400px; }
+}
+@media (max-width: 576px) {
+  .noticia-img-placeholder { height: 220px; }
+  .modal-img-detail        { max-height: 350px; }
+}

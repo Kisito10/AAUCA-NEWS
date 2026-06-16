@@ -1,0 +1,243 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark py-3">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand fw-bold fs-3" routerLink="/">
+      <span style="color:#ffc107">AAUCA</span><span style="color:#fff">NEWS</span>
+    </a>
+    <div class="d-none d-lg-flex ms-auto gap-2">
+      <a class="btn btn-outline-light" routerLink="/login">Iniciar Sesión</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container d-flex align-items-center justify-content-center py-5"
+     style="min-height:calc(100vh - 76px);">
+  <div class="card shadow-lg" style="max-width:600px;width:100%;">
+    <div class="card-body p-4 p-md-5">
+
+      <div class="text-center mb-4">
+        <h1 class="h2 fw-bold mb-1">Solicitar Acceso</h1>
+        <p class="text-muted">
+          El administrador revisará tu solicitud y te enviará las credenciales por email
+        </p>
+      </div>
+
+      <form (ngSubmit)="onSubmit()">
+
+        <!-- ── Foto de perfil ────────────────────────────────────────────── -->
+        <div class="mb-4 text-center">
+          <label class="form-label d-block fw-semibold">Foto (opcional)</label>
+          <div class="d-flex flex-column align-items-center gap-2">
+            <div style="width:90px;height:90px;border-radius:50%;overflow:hidden;
+                        border:3px solid #dee2e6;background:#f8f9fa;
+                        display:flex;align-items:center;justify-content:center;">
+              <img *ngIf="fotoPreview" [src]="fotoPreview"
+                   style="width:100%;height:100%;object-fit:cover;">
+              <span *ngIf="!fotoPreview" style="font-size:2.2rem;color:#adb5bd;">👤</span>
+            </div>
+            <label class="btn btn-sm btn-outline-secondary" style="cursor:pointer;">
+              {{ fotoPreview ? '📷 Cambiar foto' : '📷 Añadir foto' }}
+              <input type="file" accept="image/*" style="display:none;"
+                     (change)="onFotoSelected($event)">
+            </label>
+            <small class="text-muted">JPG o PNG · máx. 3 MB</small>
+          </div>
+        </div>
+
+        <!-- ── Nombre y apellidos ─────────────────────────────────────────── -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Nombre <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="nombre" name="nombre"
+                   placeholder="Tu nombre" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Apellidos</label>
+            <input type="text" class="form-control" [(ngModel)]="apellidos" name="apellidos"
+                   placeholder="Tus apellidos">
+          </div>
+        </div>
+
+        <!-- ── Email con verificación automática ─────────────────────────── -->
+        <div class="mb-3">
+          <label class="form-label">Email <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <input type="email" class="form-control"
+                   [(ngModel)]="email" name="email"
+                   placeholder="tu@email.com"
+                   (ngModelChange)="onEmailChange()"
+                   required>
+            <span class="input-group-text" *ngIf="comprobandoEmail">
+              <span class="spinner-border spinner-border-sm text-secondary"></span>
+            </span>
+          </div>
+
+          <!-- Ya tiene cuenta -->
+          <div *ngIf="estadoEmail?.tieneCuenta"
+               class="alert alert-danger py-2 mt-2 mb-0 small d-flex align-items-start gap-2">
+            <span>🚫</span>
+            <span>{{ estadoEmail!.mensaje }}</span>
+          </div>
+
+          <!-- Tiene solicitud pendiente → aviso de rectificación -->
+          <div *ngIf="estadoEmail?.tienePendiente && !estadoEmail?.tieneCuenta"
+               class="alert alert-warning py-2 mt-2 mb-0 small d-flex align-items-start gap-2">
+            <span>🔄</span>
+            <span>
+              {{ estadoEmail!.mensaje }}
+              <strong>Puedes continuar — la anterior se eliminará al enviar esta.</strong>
+            </span>
+          </div>
+        </div>
+
+        <!-- ── Género y facultad ──────────────────────────────────────────── -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Género</label>
+            <select class="form-select" [(ngModel)]="genero" name="genero">
+              <option value="">Seleccionar...</option>
+              <option value="Masculino">Masculino</option>
+              <option value="Femenino">Femenino</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Facultad / Carrera</label>
+            <input type="text" class="form-control" [(ngModel)]="facultad" name="facultad"
+                   placeholder="Ej: Ingeniería Informática">
+          </div>
+        </div>
+
+        <!-- ── Selector de edificio ───────────────────────────────────────── -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">
+            Edificio <span class="text-danger">*</span>
+          </label>
+
+          <!-- Cargando edificios -->
+          <div *ngIf="cargandoEdificios" class="text-muted small">
+            <span class="spinner-border spinner-border-sm me-1"></span>
+            Cargando edificios...
+          </div>
+
+          <!-- Grid de edificios -->
+          <div *ngIf="!cargandoEdificios" class="d-flex flex-wrap gap-2">
+            <button *ngFor="let ed of edificios" type="button"
+                    class="btn btn-sm"
+                    [class.btn-dark]="edificioSeleccionado?.id === ed.id"
+                    [class.btn-outline-secondary]="edificioSeleccionado?.id !== ed.id"
+                    (click)="edificioSeleccionado = ed; onEdificioChange()">
+              🏢 {{ ed.nombre }}
+            </button>
+          </div>
+        </div>
+
+        <!-- ── Selector visual de habitación ─────────────────────────────── -->
+        <div class="mb-4" *ngIf="edificioSeleccionado">
+          <label class="form-label fw-semibold">
+            Habitación <span class="text-danger">*</span>
+          </label>
+
+          <!-- Cargando habitaciones -->
+          <div *ngIf="cargandoHabitaciones" class="text-muted small">
+            <span class="spinner-border spinner-border-sm me-1"></span>
+            Cargando habitaciones...
+          </div>
+
+          <!-- Habitación elegida -->
+          <div *ngIf="habitacionElegida" class="alert alert-success py-2 mb-2 small d-flex align-items-center gap-2">
+            <span>✅</span>
+            <span>
+              Has elegido la habitación <strong>{{ habitacionElegida.numero }}</strong>
+              (Piso {{ habitacionElegida.piso }}) —
+              <span class="text-success fw-semibold">{{ habitacionElegida.estado }}</span>
+            </span>
+            <button type="button" class="btn-close btn-close-sm ms-auto"
+                    (click)="habitacionElegida = null" style="font-size:0.7rem;"></button>
+          </div>
+
+          <!-- Grid por pisos -->
+          <div *ngIf="!cargandoHabitaciones && habitaciones.length > 0">
+            <div *ngFor="let grupo of habitacionesPorPiso" class="mb-3">
+              <p class="text-muted small mb-2 fw-semibold">Piso {{ grupo.piso }}</p>
+              <div class="d-flex flex-wrap gap-2">
+                <button *ngFor="let hab of grupo.habs"
+                        type="button"
+                        class="btn btn-sm position-relative"
+                        [class.btn-success]="hab.disponible && habitacionElegida?.id !== hab.id"
+                        [class.btn-primary]="habitacionElegida?.id === hab.id"
+                        [class.btn-secondary]="!hab.disponible"
+                        [disabled]="!hab.disponible"
+                        [title]="hab.estado"
+                        (click)="elegirHabitacion(hab)"
+                        style="min-width:64px;">
+                  {{ hab.numero }}
+                  <!-- Badge de ocupación -->
+                  <span *ngIf="!hab.disponible"
+                        class="position-absolute top-0 start-100 translate-middle
+                               badge rounded-pill bg-danger"
+                        style="font-size:0.6rem;">
+                    Completa
+                  </span>
+                  <span *ngIf="hab.disponible && hab.pendientes === 1"
+                        class="position-absolute top-0 start-100 translate-middle
+                               badge rounded-pill bg-warning text-dark"
+                        style="font-size:0.6rem;">
+                    1/2
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sin habitaciones -->
+          <div *ngIf="!cargandoHabitaciones && habitaciones.length === 0"
+               class="text-muted small">
+            No hay habitaciones disponibles en este edificio.
+          </div>
+
+          <!-- Leyenda -->
+          <div *ngIf="habitaciones.length > 0"
+               class="d-flex flex-wrap gap-3 mt-2" style="font-size:12px;">
+            <span><span class="badge bg-success me-1">&nbsp;</span>Disponible</span>
+            <span><span class="badge bg-warning text-dark me-1">&nbsp;</span>1 plaza ocupada</span>
+            <span><span class="badge bg-secondary me-1">&nbsp;</span>Completa</span>
+            <span><span class="badge bg-primary me-1">&nbsp;</span>Tu elección</span>
+          </div>
+        </div>
+
+        <!-- ── Mensaje opcional ───────────────────────────────────────────── -->
+        <div class="mb-4">
+          <label class="form-label">Mensaje (opcional)</label>
+          <textarea class="form-control" [(ngModel)]="mensaje" name="mensaje"
+                    rows="3" placeholder="Información adicional..."></textarea>
+        </div>
+
+        <!-- ── Aviso credenciales ─────────────────────────────────────────── -->
+        <div class="alert alert-info d-flex align-items-start py-2 mb-4 small">
+          <span class="me-2">ℹ️</span>
+          No necesitas crear contraseña. Si se aprueba tu solicitud,
+          recibirás tus credenciales de acceso por email.
+        </div>
+
+        <!-- ── Errores / Éxito ────────────────────────────────────────────── -->
+        <div class="alert alert-danger"  *ngIf="errorMessage">{{ errorMessage }}</div>
+        <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+
+        <!-- ── Botón submit ───────────────────────────────────────────────── -->
+        <button type="submit" class="btn btn-primary btn-lg w-100 mb-3"
+                [disabled]="isLoading || estadoEmail?.tieneCuenta || !habitacionElegida">
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+          {{ isLoading ? 'Enviando...' : (estadoEmail?.tienePendiente ? 'Rectificar solicitud' : 'Enviar Solicitud') }}
+        </button>
+
+      </form>
+
+      <div class="text-center">
+        <p class="text-muted mb-0">
+          ¿Ya tienes cuenta?
+          <a routerLink="/login" class="fw-semibold text-decoration-none">Iniciar sesión</a>
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
