@@ -1,15 +1,12 @@
 export const environment = {
-  production:         false,
-  imgBase:            'http://localhost:9092',
-
-  apiUserUrl:         'http://localhost:9090/api/user',
-  apiSolicitudUrl:    'http://localhost:9090/api/solicitudes',
-  apiEdificioUrl:     'http://localhost:9090/api/edificio',
-  apiHabitacionUrl:   'http://localhost:9090/api/habitacion',
-
-  apiSeccionUrl:      'http://localhost:9091/api/seccion',
-
-  apiNoticiaUrl:      'http://localhost:9092/api/noticia',
-  apiLecturaUrl:      'http://localhost:9092/api/lectura',
-  apiDestinatarioUrl: 'http://localhost:9092/api/destinatario',
+  production:         true,
+  imgBase:            'https://microservicio-noticias.onrender.com',
+  apiUserUrl:         'https://microservicios-users.onrender.com/api/user',
+  apiSolicitudUrl:    'https://microservicios-users.onrender.com/api/solicitudes',
+  apiEdificioUrl:     'https://microservicios-users.onrender.com/api/edificio',
+  apiHabitacionUrl:   'https://microservicios-users.onrender.com/api/habitacion',
+  apiSeccionUrl:      'https://microservicio-secciones.onrender.com/api/seccion',
+  apiNoticiaUrl:      'https://microservicio-noticias.onrender.com/api/noticia',
+  apiLecturaUrl:      'https://microservicio-noticias.onrender.com/api/lectura',
+  apiDestinatarioUrl: 'https://microservicio-noticias.onrender.com/api/destinatario',
 };
