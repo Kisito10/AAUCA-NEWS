@@ -1,0 +1,4 @@
+{
+  "outputDirectory": "dist/mi-aplicacion-angular/browser",
+  "buildCommand": "npm run build"
+}
